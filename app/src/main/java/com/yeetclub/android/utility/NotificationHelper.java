@@ -31,7 +31,7 @@ import java.util.Map;
  */
 public class NotificationHelper {
 
-    public static final String NOTIFICATION_GROUP = "com.yitter.summary_notification";
+    public static final String NOTIFICATION_GROUP = "com.yeetclub.summary_notification";
 
     private static final String TAG = NotificationHelper.class.getSimpleName();
     private static final int SUMMARY_NOTIFICATION_ID = 80012;

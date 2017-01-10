@@ -36,7 +36,7 @@ public enum NotificationType {
      * @return The key to be used for grouping the notifications
      */
     public String getKey() {
-        return "com.yitter." + this.name();
+        return "com.yeetclub." + this.name();
     }
 
     public String getPushFunction() {

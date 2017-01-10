@@ -161,7 +161,7 @@
         <!-- ########## PROVIDERS ########## -->
         <provider
             android:name=".utility.YeetClubContentProvider"
-            android:authorities="com.yitter"
+            android:authorities="com.yeetclub"
             android:enabled="true"
             android:exported="true" >
         </provider>
