@@ -49,8 +49,8 @@ Anyway, happy coding! If you're interested in contributing, please give us a sho
 ## 1.0 Team & Past Contributors
 
 * <a href="https://github.com/santafebound/">Martin Erlic</a>
-* Simon Erlic
-* Alex Danut
+* <a href="https://github.com/supasimon/">Simon Erlic</a>
+* <a href="https://github.com/TheFanatr/">Alex Danut</a>
 
 <hr>
 
