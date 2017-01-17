@@ -28,6 +28,7 @@ Yeet Club is an open-source Android application for small, private groups of exc
 * [5.0 Roadmap](#needs)
 * [6.0 Third Party Libraries](#libs)
 * [7.0 License](#license)
+* [8.0 Trademark Information](#trademark)
 
 <hr>
 
@@ -384,3 +385,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+<hr>
+
+<a name="tradework"/>
+## 8.0 Trademark & Legal Information
+
+Yeet Club™ is a trademark of Hypercycle, Inc. The trademark Yeet Club™ may not be used in any public or commercial products or applications of any kind without the express permission of Hypercycle, Inc. The Yeet Club application may be hosted on a private server and compiled for personal consumption as is, but may not be distributed on any public forum, website or any other digital distribution method in any way without removing and/or replacing the Yeet Club™ trademark. Please keep in mind that this does not prohibit Yeet Club™ code from being used in any public or private, commercial or non-commercial product or application so long as the trademark is removed and/or replaced. For further clarification, please see the open-source license agreement provided above.
