@@ -194,7 +194,7 @@ The Poll class has not yet been implemented. Polls will allow users to asks thei
 
 The Yeet class is the bread and butter of Yeet Club. Yeets are short, 140 character messages, or images, or polls that are sent only to the groupId that you signed up with.
 
-| notificationText (String) | author (Pointer <_User>) | groupId (String) | likedBy (Array) | likeCount (Number) | replyCount (number) | repliedToBy (Array) | isRant (boolean) | rantId (String) | lastReplyUpdatedAt (Date) | image (File) | pollObject (Pointer <_Poll>) |
+| notificationText (String) | author (Pointer <_User>) | groupId (Pointer <_Group>) | likedBy (Array) | likeCount (Number) | replyCount (number) | repliedToBy (Array) | isRant (boolean) | rantId (String) | lastReplyUpdatedAt (Date) | image (File) | pollObject (Pointer <_Poll>) |
 |--------------------------|-----------------------------------------|-----------------------------|------------------|------------------|------------------|------------------|------------------|------------------|------------------|------------------|------------------|
 | Did you get the latest memo? | mBxXzIUZH3 | 94ca3bde-8735-11e6-ae22-56b6b6499611 | ["NqAq6Edr7D","CC0I8euqTY"] | 2 | 5 | ["NqAq6Edr7D","CC0I8euqTY"] | true | cc90cbf3-3e57-42ad-ab33-849a411bff03 | 2016-09-30T14:55:01.323Z | https://memecrunch.com/image/51621675afa96f32ef000013.jpg?w=400 | NqAq6Edr7D |
 
