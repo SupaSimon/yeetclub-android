@@ -388,7 +388,7 @@ limitations under the License.
 
 <hr>
 
-<a name="tradework"/>
-## 8.0 Trademark & Legal Information
+<a name="trademark"/>
+## 8.0 Trademark Information
 
 Yeet Club™ is a trademark of Hypercycle, Inc. The trademark Yeet Club™ may not be used in any public or commercial products or applications of any kind without the express permission of Hypercycle, Inc. The Yeet Club application may be hosted on a private server and compiled for personal consumption as is, but may not be distributed on any public forum, website or any other digital distribution method in any way without removing and/or replacing the Yeet Club™ trademark. Please keep in mind that this does not prohibit Yeet Club™ code from being used in any public or private, commercial or non-commercial product or application so long as the trademark is removed and/or replaced. For further clarification, please see the open-source license agreement provided above.
