@@ -23,6 +23,7 @@ Yeet Club is an open-source Android application for small, private groups of exc
     * [3.1.5 Notification](#notification)
     * [3.1.6 Poll](#poll)
     * [3.1.7 Yeet](#yeet)
+    * [3.1.8 Group](#group)
 * [4.0 Push Notifications](#push)
 * [5.0 Roadmap](#needs)
 * [6.0 Third Party Libraries](#libs)
@@ -108,6 +109,7 @@ For each Class, I've excluded the auto-generated default Parse columns, i.e. obj
 * Notification
 * Poll
 * Yeet
+* Group
 
 <hr>
 
@@ -133,9 +135,9 @@ We do not do anything special with Session but I included it for completion.
 <a name="user"/>
 #### 3.1.3 User
 
-| username (String) | name (String) | bio (String) | websiteLink (String) | profilePicture (File) | bae (String) | groupId (String) | isRanting (boolean) |
+| username (String) | name (String) | bio (String) | websiteLink (String) | profilePicture (File) | bae (String) | currentGroup (Pointer <_Group>) | myGroups (Array) | isRanting (boolean)
 |--------------------------|-----------------|-------------------|--------------|----------------------|---------------|----------------|-------------------------------------|-----------------|-----------------------|----------------------|-------------------|----------------|---------------|---------------|
-| lumberg | Lumberg | Just make sure you go ahead and put that new cover letter on all your TPS reports next time, mmkay? | https://www.youtube.com/watch?v=kVmC0ktznNo | https://memecrunch.com/image/51621675afa96f32ef000013.jpg?w=400 | Scolding Cucks | 94ca3bde-8735-11e6-ae22-56b6b6499611 | false |
+| lumberg | Lumberg | Just make sure you go ahead and put that new cover letter on all your TPS reports next time, mmkay? | https://www.youtube.com/watch?v=kVmC0ktznNo | https://memecrunch.com/image/51621675afa96f32ef000013.jpg?w=400 | Scolding Cucks | BDkKvNQ3Co | ["BDkKvNQ3Co","v30ajFHwnA"] | false |
 
 It might be worth explaining a few of these fields:
 
@@ -143,11 +145,15 @@ It might be worth explaining a few of these fields:
 
 **bae** is an optional field that notifies other users who are visiting your profile who you consider to be bae, i.e. If you're a nice guy, then "being a nice guy" is bae; if you like EDM, then "Steve Aoki" is bae, etc.
 
-##### 3.1.3.2 groupId
+##### 3.1.3.2 currentGroup
 
-The **groupId** is the unique identifier assigned to a user by themself upon registration; it's essentially a shared "password" for anybody who wants to join your group. This idenitifier can  easily be shared with users who would like to join your group upon sign up (see Settings). Currently, a groupId can only be used once, but there may be scope to allow users to assign themselves to multiple groupIds in the future. Otherwise, a followers/following system may be implemented. Frankly, it's up the community how this will evolve over time.
+The **currentGroup** is a pointer to a Group assigned to a user upon registration. Each Group has its own additional "groupId", which is a String that acts as a shared password for the entire group. This idenitifier can easily be shared with users who would like to join your group upon sign up (see Settings). By default, all users are assigned to a default kind of "lobby for noobs" group. This Pointer value can be swapped out for other saved groups from the "myGroups (Array)" column, allowing a User to jump between groups to interact with different members.
 
-##### 3.1.3.3 isRanting
+##### 3.1.3.3 myGroups
+
+An Array that stores a list of Groups to which the current User belongs. This Array may be accessed in order to switch out the User's current Group.
+
+##### 3.1.3.4 isRanting
 
 **isRanting** is a boolean that checks whether or not the current user is in rant mode. Rant mode allows the user to fire off successive yeets without having to continually press the button that lets you yeet new messages. Entering rant mode also notifies all group members when a user is ranting, and marks their posts in red so that the finished rant appears as a cohesive story. isRanting is by default set to false upon user registration, and is activated in various situations throughout the application where appropriate.
 
@@ -202,6 +208,15 @@ We make sure to update **lastReplyUpdatedAt** whenever a Yeet is replied to so t
 
 ##### 3.1.7.4 pollObject
 **pollObject** is a unique identifier that connects a Yeet feed item with a poll. When polls are implemented, the pollObject will be used to query poll data, such as questions, votes, and poll closing time, so that it can be displayed in the feed.
+
+<a name="group"/>
+#### 3.1.8 Group
+
+The Group class stores all information about separate groups created by various users within your application. Group objects are nominally referred to as "Clubs" inside the Yeet Club app. Users may switch between groups by updating their currentGroup (Pointer <_Group>) column, and also store a list of saved groups in their "myGroups (Array)" column.
+
+| name (String) | description (String) | profilePicture (File) | admin (Array) |
+|--------------------------|-----------------------------------------|-----------------------------|------------------|------------------|------------------|------------------|------------------|------------------|------------------|------------------|------------------|
+| Yoobies | Welcome. This is where total loses come to learn about Yeet Club. Ask a question! Don't be shy. | https://parsefiles.back4app.com/GDprTC66bNMp3mXWNvWJbZhWwjedoucvp6NlNKVl/236f5b3e2df1f59dbd691794c19b7d5d_total_yoobs.png | ["NqAq6Edr7D","CC0I8euqTY"] |
 
 <hr>
 
@@ -328,21 +343,17 @@ Parse.Cloud.define("pushRantStop", function (request, response) {
 <a name="needs"/>
 ## 5.0 Roadmap
 
-~~Please keep in mind that I built this in over a weekend (72 hours, as of 2016-09-30).~~ There are tons and tons of code optimizations that could be made here, including pulling all Parse queries outside of Activities, using RetroFit and ReactiveX to increase the speed of data transfer in the feed, etc. For now, please refer to the Trello board: https://trello.com/b/uYy2BsuH/yeet-club to keep track of upcoming features. In the future, I will outline a more detailed roadmap, including contributors' suggestions, database schema improvements, etc. As always, I encourage anybody who is interested to reach out at info@yeet.club if you have any questions, comments, or concerns. Cheers.
+There are tons and tons of code optimizations that could be made here, including pulling all Parse queries outside of Activities (separation of general business logic), using RetroFit and ReactiveX to increase the speed and reliability of data transfer in the feed, etc. For now, please refer to the Trello board: https://trello.com/b/uYy2BsuH/yeet-club to keep track of upcoming features. I will try my best to outline a more detailed roadmap as time goes on, including contributors' suggestions, database schema improvements, etc. As always, I encourage anybody who is interested to reach out at info@yeet.club if you have any questions, comments, or concerns. Cheers.
 
 ### 5.0.1 The Feed
 
-Consider contributing to the following classes: **1) Fragment1** (the feed), **2) FeedAdapter** (the recycler adapter for the feed), 3) **EndlessRecyclerOnScrollListener**, and 4) **LoadingRowRecyclerAdapter** (I have to yet to integrate these two classes into the feed). Loading a fixed number of items per full scroll would certainly reduce the load of our RecyclerView lists when the amount of data stored becomes larger.
+#### 5.0.1.1 The RecyclerAdapter
 
-~~Cacheing data for offline viewing could be another area to work on. See [Take Your App Offline with Parse Local Datastore](http://blog.parse.com/announcements/take-your-app-offline-with-parse-local-datastore/) for some useful information.~~ (Done, as of 2016-10-27).
+Consider contributing to the following classes: **1) FeedFragment** (the feed), **2) FeedAdapter**, 3) and **EndlessRecyclerViewScrollListener**. The feed is one area of every app that can always be optimized to display information faster, especially as the amount of data stored grows larger.
 
-### 5.0.2 Notifications Stacking (Background Job)
+#### 5.0.1.2 Local Datastore, Caching, and Networking
 
-~~Currently, notifications come one at a time. If a user receives multiple notifications they are forced to manually clear each notification individually.~~
-
-~~Instead, we want notifications to stack in one group summary notification, where the the number of notifications is incremented. The new group notification should be titled "# new interactions" and provide a preview of each of the most recent yeets. Clicking on this combined notification will bring the user to the notifications activity.~~
-
-~~Twitter is an excellent example of how this should work. Android provides a way to do this (https://opbeat.com/community/posts/building-stack-notifications-on-android/) but we will need to integrate with Parse Cloud.~~ (Done, to be included in the next update).
+Cacheing data for offline viewing could be another great way to improve the usability of the app. See [Take Your App Offline with Parse Local Datastore](http://blog.parse.com/announcements/take-your-app-offline-with-parse-local-datastore/) for some useful information. Currently, offline data storage and logic for various network states are not as good as it could be.
 
 <hr>
 
