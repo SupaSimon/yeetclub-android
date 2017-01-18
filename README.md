@@ -337,6 +337,27 @@ Parse.Cloud.define("pushRantStop", function (request, response) {
     }
   });
 });
+
+// Generic function to push to request.params.userId
+Parse.Cloud.define("pushFunction", function (request, response) {
+  var pushQuery = new Parse.Query(Parse.Installation);
+  pushQuery.equalTo('userId', request.params.userId);
+
+  Parse.Push.send({
+    where: pushQuery,
+    data: {
+      alert: "You got notification."
+    },
+  }, {
+    useMasterKey: true,
+    success: function () {
+      response.success("Success!");
+    },
+    error: function (error) {
+      response.error("Error! " + error.message);
+    }
+  });
+});
 ```
 
 <hr>
