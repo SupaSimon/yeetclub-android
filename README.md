@@ -215,9 +215,9 @@ We make sure to update **lastReplyUpdatedAt** whenever a Yeet is replied to so t
 
 The Group class stores all information about separate groups created by various users within your application. Group objects are nominally referred to as "Clubs" inside the Yeet Club app. Users may switch between groups by updating their currentGroup (Pointer <_Group>) column, and also store a list of saved groups in their "myGroups (Array)" column.
 
-| name (String) | description (String) | profilePicture (File) | admin (Array) |
+| name (String) | description (String) | profilePicture (File) | admin (Array) | secretKey (String) | private (Boolean) |
 |--------------------------|-----------------------------------------|-----------------------------|------------------|------------------|------------------|------------------|------------------|------------------|------------------|------------------|------------------|
-| Yoobies | Welcome. This is where total loses come to learn about Yeet Club. Ask a question! Don't be shy. | https://parsefiles.back4app.com/GDprTC66bNMp3mXWNvWJbZhWwjedoucvp6NlNKVl/236f5b3e2df1f59dbd691794c19b7d5d_total_yoobs.png | ["NqAq6Edr7D","CC0I8euqTY"] |
+| Yoobies | Welcome. This is where total loses come to learn about Yeet Club. Ask a question! Don't be shy. | https://parsefiles.back4app.com/GDprTC66bNMp3mXWNvWJbZhWwjedoucvp6NlNKVl/236f5b3e2df1f59dbd691794c19b7d5d_total_yoobs.png |  ["NqAq6Edr7D","CC0I8euqTY"] | 74c2ced4-8ae1-4356-b119-b9dc6b5469ee | true |
 
 <hr>
 
