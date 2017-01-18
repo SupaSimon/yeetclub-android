@@ -135,8 +135,22 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         if (!userId.equals(ParseUser.getCurrentUser().getObjectId())) {
             // Send push notification
             sendLikePushNotification(userId, result);
-            ParseObject notification = createLikeMessage(userId, result, commentId);
-            send(notification);
+
+            ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+            userQuery.whereEqualTo(ParseConstants.KEY_OBJECT_ID, ParseUser.getCurrentUser().getObjectId());
+            userQuery.findInBackground((users, e) -> {
+                if (e == null) for (ParseObject userObject : users) {
+                    // Retrieve the objectId of the user's current group
+                    String currentGroupObjectId = userObject.getParseObject(ParseConstants.KEY_CURRENT_GROUP).getObjectId();
+
+                    // Create notification object for NotificationsActivity
+                    ParseObject notification = createLikeMessage(userId, result, commentId, currentGroupObjectId);
+
+                    // Send ParsePush notification
+                    send(notification);
+
+                }
+            });
         }
     }
 
@@ -169,18 +183,10 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
     }
 
 
-    protected ParseObject createLikeMessage(String userId, String result, String commentId) {
+    protected ParseObject createLikeMessage(String userId, String result, String commentId, String currentGroupObjectId) {
 
         ParseObject notification = new ParseObject(ParseConstants.CLASS_NOTIFICATIONS);
-        notification.put(ParseConstants.KEY_SENDER_ID, ParseUser.getCurrentUser().getObjectId());
         notification.put(ParseConstants.KEY_SENDER_AUTHOR_POINTER, ParseUser.getCurrentUser());
-
-        if (!(ParseUser.getCurrentUser().get("name").toString().isEmpty())) {
-            notification.put(ParseConstants.KEY_SENDER_FULL_NAME, ParseUser.getCurrentUser().get("name"));
-        } else {
-            notification.put(ParseConstants.KEY_SENDER_FULL_NAME, R.string.anonymous_fullName);
-        }
-
         notification.put(ParseConstants.KEY_NOTIFICATION_BODY, result);
         notification.put(ParseConstants.KEY_SENDER_NAME, ParseUser.getCurrentUser().getUsername());
         notification.put(ParseConstants.KEY_RECIPIENT_ID, userId);
@@ -188,9 +194,8 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         notification.put(ParseConstants.KEY_NOTIFICATION_TEXT, " liked your yeet!");
         notification.put(ParseConstants.KEY_NOTIFICATION_TYPE, ParseConstants.TYPE_LIKE);
         notification.put(ParseConstants.KEY_READ_STATE, false);
-        if (ParseUser.getCurrentUser().getParseFile("profilePicture") != null) {
-            notification.put(ParseConstants.KEY_SENDER_PROFILE_PICTURE, ParseUser.getCurrentUser().getParseFile("profilePicture").getUrl());
-        }
+        notification.put(ParseConstants.KEY_GROUP_ID, currentGroupObjectId);
+
         return notification;
     }
 

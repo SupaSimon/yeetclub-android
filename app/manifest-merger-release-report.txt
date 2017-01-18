@@ -171,7 +171,7 @@ ADDED from AndroidManifest.xml:105:9
 		ADDED from AndroidManifest.xml:105:75
 	android:name
 		ADDED from AndroidManifest.xml:105:20
-activity#com.yeetclub.android.DispatchActivity
+activity#com.yeetclub.android.activity.DispatchActivity
 ADDED from AndroidManifest.xml:106:9
 	android:screenOrientation
 		ADDED from AndroidManifest.xml:110:13
@@ -201,7 +201,7 @@ ADDED from AndroidManifest.xml:117:9
 		ADDED from AndroidManifest.xml:119:13
 	android:name
 		ADDED from AndroidManifest.xml:118:13
-activity#com.yeetclub.android.MainActivity
+activity#com.yeetclub.android.activity.MainActivity
 ADDED from AndroidManifest.xml:128:9
 	android:screenOrientation
 		ADDED from AndroidManifest.xml:132:13
@@ -283,7 +283,7 @@ activity#io.card.payment.DataEntryActivity
 ADDED from AndroidManifest.xml:168:9
 	android:name
 		ADDED from AndroidManifest.xml:168:19
-provider#com.yeetclub.utility.ElgamiContentProvider
+provider#com.yeetclub.android.utility.ElgamiContentProvider
 ADDED from AndroidManifest.xml:170:9
 	android:authorities
 		ADDED from AndroidManifest.xml:172:13
@@ -305,7 +305,7 @@ ADDED from AndroidManifest.xml:181:9
 		ADDED from AndroidManifest.xml:183:13
 	android:name
 		ADDED from AndroidManifest.xml:182:13
-activity#com.yeetclub.utility.WrapperWeb
+activity#com.yeetclub.android.utility.WrapperWeb
 ADDED from AndroidManifest.xml:185:9
 	android:label
 		ADDED from AndroidManifest.xml:187:13

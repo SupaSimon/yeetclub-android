@@ -10,7 +10,7 @@
 
     <string name="file_permissions">You need to enable file permissions to see what your friends post. Click here to enable file permissions.</string>
 
-    <string name="drawer_item_profile">Yofe</string>
+    <string name="drawer_item_profile">My Profile</string>
     <string name="notifications_title">Yotificayshes</string>
     <string name="add_comment">Yeet something ints you monk!</string>
 
@@ -18,10 +18,10 @@
     <string name="edit_profile_website">Website</string>
     <string name="edit_profile_username">Username</string>
     <string name="edit_profile_name">Full Name</string>
-    <string name="edit_profile_title">Yedit Yofe</string>
-    <string name="drawer_item_edit_profile">Yedit Yofe</string>
+    <string name="edit_profile_title">Edit Profile</string>
+    <string name="drawer_item_edit_profile">Edit Profile</string>
     <string name="drawer_item_home">Yome Yase</string>
-    <string name="drawer_item_create">Yite Yeet</string>
+    <string name="drawer_item_create">Yeeeeet!!!</string>
     <string name="drawer_item_notifications">Yotificayshes</string>
     <string name="drawer_item_logout">Yog Yout</string>
     <string name="repes">Reeps</string>
@@ -93,5 +93,30 @@
     <string name="number_of_points_accumulated">The number of points this user has accumulated</string>
     <string name="rank">Rank:</string>
     <string name="my_first_yeet">#myFirstYeet</string>
-    <string name="is_bae"> IS BAE</string>
+    <string name="is_bae">IS BAE</string>
+    <string name="votes">votes</string>
+    <string name="vote">vote</string>
+    <string name="voters">voters</string>
+    <string name="likers">likers</string>
+    <string name="users">Users</string>
+    <string name="voted_on_by">Voted on by</string>
+    <string name="liked_by">Liked by</string>
+    <string name="likes">likes</string>
+    <string name="like">like</string>
+    <string name="my_groups">My Clubs</string>
+    <string name="anonymous_loses">Anonymous Loses</string>
+    <string name="group_name">Group Name</string>
+    <string name="current_group">CURRENT CLUB</string>
+    <string name="drawer_item_my_groups">My Clubs</string>
+    <string name="group_description">Group Descriptiopn</string>
+    <string name="user_bio">User Bio</string>
+    <string name="switch_group">Switch Club?</string>
+    <string name="this_user_is_verified" />
+    <string name="edit_group">Edit Club</string>
+    <string name="name">Name</string>
+    <string name="group_id">Group ID</string>
+    <string name="create_club">Create Club</string>
+    <string name="search_clubs">Search Clubs</string>
+    <string name="explore_groups">Explore Public Clubs</string>
+    <string name="join_secret_club">Join Secret Club</string>
 </resources>

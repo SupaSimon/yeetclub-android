@@ -14,7 +14,7 @@
         </Preference>
 
         <Preference
-            android:title="Share Group Key"
+            android:title="Share Club Key"
             android:summary=""
             android:key="shareKey">
         </Preference>
@@ -23,8 +23,8 @@
             android:title="Edit Profile"
             android:summary=""
             android:key="editProfile">
-
         </Preference>
+
         <Preference
             android:title="Change Password"
             android:summary=""

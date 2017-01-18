@@ -162,7 +162,8 @@ public class NotificationHelper {
                 .setSummaryText("Yeet Club");
 
         for (ParseObject notification : notifications) {
-            style.addLine(notification.getString(ParseConstants.KEY_SENDER_NAME) + notification.getString(ParseConstants.KEY_NOTIFICATION_TEXT));
+            style.addLine(notification.getString(ParseConstants.KEY_SENDER_NAME) + " " + notification.getString(ParseConstants.KEY_NOTIFICATION_TEXT)
+                    + ": " + notification.getString(ParseConstants.KEY_NOTIFICATION_BODY));
         }
 
         // Instantiate summaryNotification

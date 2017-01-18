@@ -23,16 +23,15 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
-import com.yeetclub.android.activity.MediaPreviewActivity;
 import com.yeetclub.android.R;
 import com.yeetclub.android.activity.CommentActivity;
+import com.yeetclub.android.activity.MediaPreviewActivity;
 import com.yeetclub.android.activity.ReplyActivity;
-import com.yeetclub.android.utility.RecyclerViewSimpleTextViewHolder;
-import com.yeetclub.android.parse.ParseConstants;
 import com.yeetclub.android.activity.UserProfileActivity;
+import com.yeetclub.android.parse.ParseConstants;
 import com.yeetclub.android.utility.NetworkHelper;
+import com.yeetclub.android.utility.RecyclerViewSimpleTextViewHolder;
 
 import java.util.Collections;
 import java.util.Date;
@@ -179,7 +178,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<RecyclerView.View
 
                         Picasso.with(mContext)
                                 .load(profilePictureURL)
-                                .networkPolicy(NetworkPolicy.OFFLINE)
+                                //.networkPolicy(NetworkPolicy.OFFLINE)
                                 .placeholder(R.color.placeholderblue)
                                 .fit()
                                 .into(holder.profilePicture);
@@ -217,7 +216,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<RecyclerView.View
 
                         Picasso.with(mContext)
                                 .load(profilePictureURL)
-                                .networkPolicy(NetworkPolicy.OFFLINE)
+                                //.networkPolicy(NetworkPolicy.OFFLINE)
                                 .placeholder(R.color.placeholderblue)
                                 .fit()
                                 .into(holder.profilePicture);
@@ -290,8 +289,22 @@ public class NotificationsAdapter extends RecyclerView.Adapter<RecyclerView.View
         if (!userId.equals(ParseUser.getCurrentUser().getObjectId())) {
             // Send push notification
             sendLikePushNotification(userId, result);
-            ParseObject notification = createLikeMessage(userId, result, commentId);
-            send(notification);
+
+            ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+            userQuery.whereEqualTo(ParseConstants.KEY_OBJECT_ID, ParseUser.getCurrentUser().getObjectId());
+            userQuery.findInBackground((users, e) -> {
+                if (e == null) for (ParseObject userObject : users) {
+                    // Retrieve the objectId of the user's current group
+                    String currentGroupObjectId = userObject.getParseObject(ParseConstants.KEY_CURRENT_GROUP).getObjectId();
+
+                    // Create notification object for NotificationsActivity
+                    ParseObject notification = createLikeMessage(userId, result, commentId, currentGroupObjectId);
+
+                    // Send ParsePush notification
+                    send(notification);
+
+                }
+            });
         }
     }
 
@@ -314,7 +327,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<RecyclerView.View
         });
     }
 
-    protected ParseObject createLikeMessage(String userId, String result, String commentId) {
+    protected ParseObject createLikeMessage(String userId, String result, String commentId, String currentGroupObjectId) {
 
         ParseObject notification = new ParseObject(ParseConstants.CLASS_NOTIFICATIONS);
 
@@ -326,6 +339,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<RecyclerView.View
         notification.put(ParseConstants.KEY_NOTIFICATION_TEXT, " liked your yeet!");
         notification.put(ParseConstants.KEY_NOTIFICATION_TYPE, ParseConstants.TYPE_LIKE);
         notification.put(ParseConstants.KEY_READ_STATE, false);
+        notification.put(ParseConstants.KEY_GROUP_ID, currentGroupObjectId);
 
         return notification;
     }
@@ -371,7 +385,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<RecyclerView.View
         String notificationBody = notifications.getString(ParseConstants.KEY_NOTIFICATION_BODY);
         holder.notificationBody.setText(notificationBody);
 
-        Boolean isRead = notifications.getBoolean("read");
+        Boolean isRead = notifications.getBoolean(ParseConstants.KEY_READ_STATE);
         /*System.out.println(isRead);*/
         if (isRead) {
             int color = R.color.stroke;

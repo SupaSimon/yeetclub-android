@@ -14,11 +14,11 @@ import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.yeetclub.android.activity.MainActivity;
+import com.yeetclub.android.utility.NotificationHelper;
 import com.parse.ParseAnalytics;
 import com.parse.ParsePushBroadcastReceiver;
 import com.yeetclub.android.R;
-import com.yeetclub.android.activity.MainActivity;
-import com.yeetclub.android.utility.NotificationHelper;
 
 import org.json.JSONException;
 import org.json.JSONObject;

@@ -34,6 +34,45 @@ public class UserSettingsActivity extends PreferenceActivity {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.activity_settings);
 
+        Preference shareKeyPref = findPreference("shareKey");
+        shareKeyPref.setOnPreferenceClickListener(preference -> {
+
+            ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+            userQuery.whereEqualTo(ParseConstants.KEY_OBJECT_ID, ParseUser.getCurrentUser().getObjectId());
+            userQuery.findInBackground((users, e) -> {
+                if (e == null) for (ParseObject userObject : users) {
+                    // Retrieve the objectId of the user's current group
+                    String currentGroupObjectId = userObject.getParseObject(ParseConstants.KEY_CURRENT_GROUP).getObjectId();
+
+                    // Use the group objectId to query the actual groupId of the queried group
+                    ParseQuery<ParseObject> groupQuery = new ParseQuery<>(ParseConstants.CLASS_GROUP);
+                    groupQuery.whereEqualTo(ParseConstants.KEY_OBJECT_ID, currentGroupObjectId);
+                    groupQuery.findInBackground((groups, e2) -> {
+                        if (e2 == null) for (ParseObject groupObject : groups) {
+
+                            String shareKey = groupObject.getString("secretKey");
+
+                            // Copy Yecret Key to clipboard to share with friends in case external application does not support intent extras
+                            android.content.ClipboardManager clipboardclipboardMarket = (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                            ClipData clipText = ClipData.newPlainText("Share Club Key", shareKey);
+                            clipboardclipboardMarket.setPrimaryClip(clipText);
+                            Toast.makeText(getApplicationContext(), "Club Key copied to clipboard", Toast.LENGTH_SHORT).show();
+
+                            // Generate social media share options
+                            Intent sendIntent = new Intent();
+                            sendIntent.setAction(Intent.ACTION_SEND);
+                            sendIntent.putExtra(Intent.EXTRA_TEXT, shareKey);
+                            sendIntent.setType("text/plain");
+                            startActivity(sendIntent);
+
+                        }
+                    });
+                }
+            });
+
+            return false;
+        });
+
         Preference privacyPolicyPref = findPreference("privacyPolicy");
         privacyPolicyPref.setOnPreferenceClickListener(preference -> {
             String url = "http://www.yeet.club/#/privacy";
@@ -49,26 +88,6 @@ public class UserSettingsActivity extends PreferenceActivity {
             Intent i = new Intent(Intent.ACTION_VIEW);
             i.setData(Uri.parse(url));
             startActivity(i);
-            return false;
-        });
-
-        Preference shareKeyPref = findPreference("shareKey");
-        shareKeyPref.setOnPreferenceClickListener(preference -> {
-
-            // Copy Yecret Key to clipboard to share with friends in case external application does not support intent extras
-            String shareKey = ParseUser.getCurrentUser().getString("groupId");
-            android.content.ClipboardManager clipboardclipboardMarket = (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-            ClipData clipText = ClipData.newPlainText("Share Group Key", shareKey);
-            clipboardclipboardMarket.setPrimaryClip(clipText);
-            Toast.makeText(getApplicationContext(), "Group Key copied to clipboard", Toast.LENGTH_SHORT).show();
-
-            // Generate social media share options
-            Intent sendIntent = new Intent();
-            sendIntent.setAction(Intent.ACTION_SEND);
-            sendIntent.putExtra(Intent.EXTRA_TEXT, shareKey);
-            sendIntent.setType("text/plain");
-            startActivity(sendIntent);
-
             return false;
         });
 

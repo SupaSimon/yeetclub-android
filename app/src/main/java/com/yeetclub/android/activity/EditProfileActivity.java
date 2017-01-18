@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
@@ -27,9 +29,9 @@ import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 import com.yeetclub.android.R;
 import com.yeetclub.android.parse.ParseConstants;
-import com.yeetclub.android.parse.ParseHelper;
 import com.yeetclub.android.utility.NetworkHelper;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
@@ -69,7 +71,7 @@ public class EditProfileActivity extends AppCompatActivity {
         boolean isOnline = NetworkHelper.isOnline(this);
 
         // Hide or show views associated with network state
-        LinearLayout ll = (LinearLayout)findViewById(R.id.linearLayout);
+        LinearLayout ll = (LinearLayout) findViewById(R.id.linearLayout);
         ll.setVisibility(isOnline ? View.VISIBLE : View.GONE);
         findViewById(R.id.submitProfileChanges).setVisibility(isOnline ? View.VISIBLE : View.GONE);
 
@@ -108,12 +110,22 @@ public class EditProfileActivity extends AppCompatActivity {
             // Update user
             ParseUser user1 = ParseUser.getCurrentUser();
             user1.put("name", fullNameField.getText().toString());
-            user1.setUsername(usernameField.getText().toString().toLowerCase().replaceAll("\\s",""));
+            user1.setUsername(usernameField.getText().toString().toLowerCase().replaceAll("\\s", ""));
             user1.put("websiteLink", websiteField.getText().toString());
             user1.put("bio", bioField.getText().toString());
             user1.put("bae", baeField.getText().toString());
 
-            user1.saveEventually(e -> {
+            // Set profile picture
+            ImageView imageView = (ImageView) findViewById(R.id.profile_picture);
+            Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] image = stream.toByteArray();
+            ParseFile file = new ParseFile("profilePicture.png", image);
+            user1.put("profilePicture", file);
+
+            user1.saveInBackground(e -> {
+                        finish();
                         Toast.makeText(getApplicationContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(this, UserProfileActivity.class);
                         startActivity(intent);
@@ -217,9 +229,9 @@ public class EditProfileActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
 
-        switch(requestCode) {
+        switch (requestCode) {
             case SELECT_PHOTO:
-                if(resultCode == RESULT_OK){
+                if (resultCode == RESULT_OK) {
                     Uri selectedImage = imageReturnedIntent.getData();
                     InputStream imageStream = null;
                     try {
@@ -229,8 +241,8 @@ public class EditProfileActivity extends AppCompatActivity {
                     }
                     Bitmap yourSelectedImage = BitmapFactory.decodeStream(imageStream);
                     Bitmap croppedThumbnail = ThumbnailUtils.extractThumbnail(yourSelectedImage, 144, 144, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
-                    ParseHelper.UploadProfilePictureToCurrentUser(croppedThumbnail);
-                    RefreshGalleryActivity();
+                    ImageView selectedProfilePicture = (ImageView) findViewById(R.id.profile_picture);
+                    selectedProfilePicture.setImageBitmap(croppedThumbnail);
                 }
         }
     }

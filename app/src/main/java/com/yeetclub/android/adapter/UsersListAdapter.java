@@ -95,6 +95,13 @@ public class UsersListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         }
         holder.fullName.setOnClickListener(v -> retrievePointerObjectId(user));
 
+        // Retrieve bio
+        if (user.getString(ParseConstants.KEY_USER_BIO) != null) {
+            holder.bio.setText(user.getString(ParseConstants.KEY_USER_BIO));
+        } else {
+            holder.bio.setVisibility(View.GONE);
+        }
+
         // Retrieve username
         holder.username.setText(user.getString(ParseConstants.KEY_USERNAME));
         holder.username.setOnClickListener(v -> retrievePointerObjectId(user));
@@ -125,7 +132,7 @@ public class UsersListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
                 Picasso.with(mContext)
                         .load(profilePictureURL)
-                        .networkPolicy(NetworkPolicy.OFFLINE)
+                        //.networkPolicy(NetworkPolicy.OFFLINE)
                         .placeholder(R.color.placeholderblue)
                         .fit()
                         .into(holder.profilePicture);
@@ -159,8 +166,7 @@ public class UsersListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         TextView fullName;
         TextView username;
         ImageView profilePicture;
-        TextView points;
-        TextView rank;
+        TextView bio;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -168,6 +174,7 @@ public class UsersListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             fullName = (TextView) itemView.findViewById(R.id.fullName);
             username = (TextView) itemView.findViewById(R.id.username);
             profilePicture = (ImageView) (itemView.findViewById(R.id.profilePicture));
+            bio = (TextView) (itemView.findViewById(R.id.bio));
 
         }
     }

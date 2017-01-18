@@ -12,6 +12,7 @@ import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -26,13 +27,14 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.yeetclub.android.R;
 import com.yeetclub.android.activity.CommentActivity;
 import com.yeetclub.android.activity.MediaPreviewActivity;
 import com.yeetclub.android.activity.ReplyActivity;
 import com.yeetclub.android.activity.UserProfileActivity;
+import com.yeetclub.android.activity.UsersListActivity;
+import com.yeetclub.android.parse.BundleConstants;
 import com.yeetclub.android.parse.ParseConstants;
 import com.yeetclub.android.utility.NetworkHelper;
 
@@ -165,7 +167,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
                     incrementLikeCountForComment(reply, position);
 
                     // Initiate Like notification
-                    handleLikeNotification(yeetObject);
+                    handleLikeNotificationForComment(yeetObject);
 
                 } else {
                     Toast.makeText(mContext, "You already liked this Yeet", Toast.LENGTH_SHORT).show();
@@ -182,22 +184,64 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     private void handleLikeNotification(ParseObject yeetObject) {
         String userId = yeetObject.getParseObject(ParseConstants.KEY_SENDER_AUTHOR_POINTER).getObjectId();
-        String currentUser = ParseUser.getCurrentUser().getObjectId();
+        String currentUserId = ParseUser.getCurrentUser().getObjectId();
 
         // Get the objectId of the top-level comment
         String commentId = yeetObject.getObjectId();
         String result = yeetObject.getString(ParseConstants.KEY_NOTIFICATION_TEXT);
         /*System.out.println("Yeet text: " + result);*/
 
-        if (!userId.equals(currentUser)) {
+        if (!userId.equals(currentUserId)) {
             // Send push notification
             sendLikePushNotification(userId, result);
 
-            // Create notification object for NotificationsActivity
-            ParseObject notification = createLikeMessage(userId, result, commentId);
+            ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+            userQuery.whereEqualTo(ParseConstants.KEY_OBJECT_ID, ParseUser.getCurrentUser().getObjectId());
+            userQuery.findInBackground((users, e) -> {
+                if (e == null) for (ParseObject userObject : users) {
+                    // Retrieve the objectId of the user's current group
+                    String currentGroupObjectId = userObject.getParseObject(ParseConstants.KEY_CURRENT_GROUP).getObjectId();
 
-            // Send ParsePush notification
-            send(notification);
+                    // Create notification object for NotificationsActivity
+                    ParseObject notification = createLikeMessage(userId, result, commentId, currentGroupObjectId);
+
+                    // Send ParsePush notification
+                    send(notification);
+
+                }
+            });
+        }
+    }
+
+
+    private void handleLikeNotificationForComment(ParseObject yeetObject) {
+        String userId = yeetObject.getParseObject(ParseConstants.KEY_SENDER_AUTHOR_POINTER).getObjectId();
+        String currentUserId = ParseUser.getCurrentUser().getObjectId();
+
+        // Get the objectId of the top-level comment
+        String commentId = yeetObject.getObjectId();
+        String result = yeetObject.getString(ParseConstants.KEY_COMMENT_TEXT);
+        /*System.out.println("Yeet text: " + result);*/
+
+        if (!userId.equals(currentUserId)) {
+            // Send push notification
+            sendLikePushNotification(userId, result);
+
+            ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+            userQuery.whereEqualTo(ParseConstants.KEY_OBJECT_ID, ParseUser.getCurrentUser().getObjectId());
+            userQuery.findInBackground((users, e) -> {
+                if (e == null) for (ParseObject userObject : users) {
+                    // Retrieve the objectId of the user's current group
+                    String currentGroupObjectId = userObject.getParseObject(ParseConstants.KEY_CURRENT_GROUP).getObjectId();
+
+                    // Create notification object for NotificationsActivity
+                    ParseObject notification = createLikeMessage(userId, result, commentId, currentGroupObjectId);
+
+                    // Send ParsePush notification
+                    send(notification);
+
+                }
+            });
         }
     }
 
@@ -238,18 +282,18 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     }
 
 
-    private ParseObject createLikeMessage(String userId, String result, String commentId) {
+    private ParseObject createLikeMessage(String userId, String result, String commentId, String currentGroupObjectId) {
 
         ParseObject notification = new ParseObject(ParseConstants.CLASS_NOTIFICATIONS);
 
         notification.put(ParseConstants.KEY_SENDER_AUTHOR_POINTER, ParseUser.getCurrentUser());
-
         notification.put(ParseConstants.KEY_NOTIFICATION_BODY, result);
         notification.put(ParseConstants.KEY_SENDER_NAME, ParseUser.getCurrentUser().getUsername());
         notification.put(ParseConstants.KEY_RECIPIENT_ID, userId);
         notification.put(ParseConstants.KEY_COMMENT_OBJECT_ID, commentId);
         notification.put(ParseConstants.KEY_NOTIFICATION_TEXT, " liked your yeet!");
         notification.put(ParseConstants.KEY_NOTIFICATION_TYPE, ParseConstants.TYPE_LIKE);
+        notification.put(ParseConstants.KEY_GROUP_ID, currentGroupObjectId);
         notification.put(ParseConstants.KEY_READ_STATE, false);
 
         return notification;
@@ -533,7 +577,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
             setRantTag(holder, color, bgColor);
         }
 
-        /*fadeinViews(holder);*/
+        fadeinViews(holder);
 
         // Display user profile picture
         downloadProfilePicture(holder, yeet);
@@ -616,6 +660,19 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     }
 
 
+    private void fadeinViews(FeedAdapter.ViewHolder holder) {
+        Animation animFadeIn;
+
+        animFadeIn = AnimationUtils.loadAnimation(mContext, R.anim.fadein);
+
+        holder.profilePicture.setAnimation(animFadeIn);
+        holder.profilePicture.setVisibility(View.VISIBLE);
+
+        holder.fullName.setAnimation(animFadeIn);
+        holder.fullName.setVisibility(View.VISIBLE);
+    }
+
+
     private void showDeleteCommentAlertDialog(int position, View v) {
         boolean isOnline = NetworkHelper.isOnline(mContext);
         if (!isOnline) {
@@ -673,7 +730,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
                     // Total number of votes
                     int votedTotal_int = pollObject.getList("votedBy").size();
-                    System.out.println("Total votes cast: " + Integer.toString(votedTotal_int));
+                    // System.out.println("Total votes cast: " + Integer.toString(votedTotal_int));
 
                     if (votedTotal_int > 0) {
                         // Set poll options values
@@ -696,6 +753,20 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
                         int value4_pct = ((value4_int / votedTotal_int) * 100);
                         String value4_string = Integer.toString(value4_pct);
                         holder.value4.setText(value4_string + " %");
+
+                        // Display the total numbers of votes for a poll
+                        String voteTotal_string = Integer.toString(votedTotal_int);
+                        holder.numVotes.setText(voteTotal_string);
+
+                        if (votedTotal_int > 1) {
+                            holder.votes.setText(mContext.getString(R.string.votes));
+                        } else {
+                            holder.votes.setText(mContext.getString(R.string.vote));
+                        }
+
+                        // Set click listeners for voters list
+                        setVotersListClickListeners(holder, position);
+
                     }
 
                 } else {
@@ -855,6 +926,22 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     }
 
 
+    private void setVotersListClickListeners(ViewHolder holder, int position) {
+        holder.numVotes.setOnClickListener(v -> sendVotersListExtras(position));
+        holder.votes.setOnClickListener(v -> sendVotersListExtras(position));
+    }
+
+
+    private void sendVotersListExtras(int position) {
+        Intent intent = new Intent(mContext, UsersListActivity.class);
+        intent.putExtra(BundleConstants.KEY_LIST_TYPE, mContext.getString(R.string.voters));
+        String pollObjectId = mYeets.get(position).getParseObject(ParseConstants.KEY_POLL_OBJECT).getObjectId();
+        intent.putExtra(BundleConstants.KEY_POLL_OBJECT_ID, pollObjectId);
+        Log.w(getClass().toString(), pollObjectId);
+        mContext.startActivity(intent);
+    }
+
+
     private void queryReplyObject2(ViewHolder holder, ParseObject yeet, int position) {
         ParseQuery<ParseObject> query = new ParseQuery<>(ParseConstants.CLASS_COMMENT);
         query.whereEqualTo(ParseConstants.KEY_SENDER_PARSE_OBJECT_ID, yeet.getObjectId());
@@ -995,7 +1082,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
             if (e == null) {
 
                 // Check if reply is not empty
-                if(!reply.isEmpty()) {
+                if (!reply.isEmpty()) {
 
                     // Pin object to local datastore
                     ParseObject.pinAllInBackground(reply);
@@ -1078,7 +1165,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
                         Picasso.with(mContext)
                                 .load(profilePictureURL)
-                                .networkPolicy(NetworkPolicy.OFFLINE)
+                                //.networkPolicy(NetworkPolicy.OFFLINE)
                                 .placeholder(R.color.placeholderblue)
                                 .fit()
                                 .into(holder.profilePicture);
@@ -1121,7 +1208,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
                         Picasso.with(mContext)
                                 .load(profilePictureURL)
-                                .networkPolicy(NetworkPolicy.OFFLINE)
+                                //.networkPolicy(NetworkPolicy.OFFLINE)
                                 .placeholder(R.color.placeholderblue)
                                 .fit()
                                 .into(holder.profilePicture2);
@@ -1162,7 +1249,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
                         Picasso.with(mContext)
                                 .load(profilePictureURL)
-                                .networkPolicy(NetworkPolicy.OFFLINE)
+                                //.networkPolicy(NetworkPolicy.OFFLINE)
                                 .placeholder(R.color.placeholderblue)
                                 .fit()
                                 .into(holder.profilePicture3);
@@ -1203,7 +1290,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
                         Picasso.with(mContext)
                                 .load(profilePictureURL)
-                                .networkPolicy(NetworkPolicy.OFFLINE)
+                                //.networkPolicy(NetworkPolicy.OFFLINE)
                                 .placeholder(R.color.placeholderblue)
                                 .fit()
                                 .into(holder.profilePicture2);
@@ -1266,7 +1353,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         return position;
     }
 
-
     @Override
     public int getItemCount() {
         if (mYeets == null) {
@@ -1307,6 +1393,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         TextView vote2;
         TextView vote3;
         TextView vote4;
+        TextView numVotes;
+        TextView votes;
 
         RelativeLayout resultLayout1;
         RelativeLayout resultLayout2;
@@ -1376,6 +1464,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
             vote2 = (TextView) itemView.findViewById(R.id.vote2);
             vote3 = (TextView) itemView.findViewById(R.id.vote3);
             vote4 = (TextView) itemView.findViewById(R.id.vote4);
+            numVotes = (TextView) itemView.findViewById(R.id.numVotes);
+            votes = (TextView) itemView.findViewById(R.id.votes);
 
             resultLayout1 = (RelativeLayout) itemView.findViewById(R.id.resultLayout1);
             resultLayout2 = (RelativeLayout) itemView.findViewById(R.id.resultLayout2);

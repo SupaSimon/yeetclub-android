@@ -12,6 +12,7 @@ import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -185,8 +186,22 @@ public class UserProfileAdapter extends RecyclerView.Adapter<UserProfileAdapter.
         if (!userId.equals(ParseUser.getCurrentUser().getObjectId())) {
             // Send push notification
             sendLikePushNotification(userId, result);
-            ParseObject notification = createLikeMessage(userId, result, commentId);
-            send(notification);
+
+            ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+            userQuery.whereEqualTo(ParseConstants.KEY_OBJECT_ID, ParseUser.getCurrentUser().getObjectId());
+            userQuery.findInBackground((users, e) -> {
+                if (e == null) for (ParseObject userObject : users) {
+                    // Retrieve the objectId of the user's current group
+                    String currentGroupObjectId = userObject.getParseObject(ParseConstants.KEY_CURRENT_GROUP).getObjectId();
+
+                    // Create notification object for NotificationsActivity
+                    ParseObject notification = createLikeMessage(userId, result, commentId, currentGroupObjectId);
+
+                    // Send ParsePush notification
+                    send(notification);
+
+                }
+            });
         }
     }
 
@@ -211,7 +226,7 @@ public class UserProfileAdapter extends RecyclerView.Adapter<UserProfileAdapter.
     }
 
 
-    protected ParseObject createLikeMessage(String userId, String result, String commentId) {
+    protected ParseObject createLikeMessage(String userId, String result, String commentId, String currentGroupObjectId) {
 
         ParseObject notification = new ParseObject(ParseConstants.CLASS_NOTIFICATIONS);
 
@@ -223,6 +238,7 @@ public class UserProfileAdapter extends RecyclerView.Adapter<UserProfileAdapter.
         notification.put(ParseConstants.KEY_NOTIFICATION_TEXT, " liked your yeet!");
         notification.put(ParseConstants.KEY_NOTIFICATION_TYPE, ParseConstants.TYPE_LIKE);
         notification.put(ParseConstants.KEY_READ_STATE, false);
+        notification.put(ParseConstants.KEY_GROUP_ID, currentGroupObjectId);
 
         return notification;
     }
@@ -427,16 +443,13 @@ public class UserProfileAdapter extends RecyclerView.Adapter<UserProfileAdapter.
             setPremiumContent(holder, View.GONE);
         }
 
-        /*fadeinViews(holder);*/
+        fadeinViews(holder);
 
         downloadProfilePicture(holder, yeets);
 
-        holder.messageImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                v.startAnimation(AnimationUtils.loadAnimation(mContext, R.anim.image_click));
-                retrievePointerObjectIdForComment(yeets);
-            }
+        holder.messageImage.setOnClickListener(v -> {
+            v.startAnimation(AnimationUtils.loadAnimation(mContext, R.anim.image_click));
+            retrievePointerObjectIdForComment(yeets);
         });
 
         holder.replyImage.setOnClickListener(view -> {
@@ -476,6 +489,19 @@ public class UserProfileAdapter extends RecyclerView.Adapter<UserProfileAdapter.
 
             return true;
         });
+    }
+
+
+    private void fadeinViews(UserProfileAdapter.ViewHolder holder) {
+        Animation animFadeIn;
+
+        animFadeIn = AnimationUtils.loadAnimation(mContext, R.anim.fadein);
+
+        holder.profilePicture.setAnimation(animFadeIn);
+        holder.profilePicture.setVisibility(View.VISIBLE);
+
+        holder.fullName.setAnimation(animFadeIn);
+        holder.fullName.setVisibility(View.VISIBLE);
     }
 
 
@@ -723,12 +749,11 @@ public class UserProfileAdapter extends RecyclerView.Adapter<UserProfileAdapter.
     private void downloadProfilePicture(ViewHolder holder, ParseObject yeets) {
         ParseQuery<ParseUser> query = ParseUser.getQuery();
         query.whereEqualTo(ParseConstants.KEY_OBJECT_ID, yeets.getParseObject(ParseConstants.KEY_SENDER_AUTHOR_POINTER).getObjectId());
-
         query.findInBackground((user, e) -> {
             if (e == null) for (ParseObject userObject : user) {
 
-                if (userObject.getParseFile("profilePicture") != null) {
-                    String profilePictureURL = userObject.getParseFile("profilePicture").getUrl();
+                if (userObject.getParseFile(ParseConstants.KEY_PROFILE_PICTURE) != null) {
+                    String profilePictureURL = userObject.getParseFile(ParseConstants.KEY_PROFILE_PICTURE).getUrl();
 
                     // Asynchronously display the profile picture downloaded from Parse
                     if (profilePictureURL != null) {
@@ -781,6 +806,8 @@ public class UserProfileAdapter extends RecyclerView.Adapter<UserProfileAdapter.
                     } else {
                         holder.messageImage.setVisibility(View.GONE);
                     }
+                } else {
+                    holder.messageImage.setVisibility(View.GONE);
                 }
             }
         });

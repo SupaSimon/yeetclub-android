@@ -43,7 +43,7 @@ import com.parse.SaveCallback;
 import com.squareup.picasso.Picasso;
 import com.yeetclub.android.R;
 import com.yeetclub.android.adapter.CommentAdapter;
-import com.yeetclub.android.adapter.FeedAdapter;
+import com.yeetclub.android.parse.BundleConstants;
 import com.yeetclub.android.parse.ParseConstants;
 import com.yeetclub.android.utility.DividerItemDecoration;
 import com.yeetclub.android.utility.NetworkHelper;
@@ -67,7 +67,6 @@ public class CommentActivity extends AppCompatActivity {
     protected SwipeRefreshLayout mSwipeRefreshLayout;
 
     private RecyclerView mRecyclerView;
-    private FeedAdapter adapter;
 
     public CommentActivity() {
 
@@ -203,6 +202,8 @@ public class CommentActivity extends AppCompatActivity {
         LinearLayout topLevelLinearLayout = (LinearLayout) findViewById(R.id.listView_item);
         ImageView topLevelProfilePicture = (ImageView) findViewById(profilePicture);
 
+        TextView topLevelLikes = (TextView) findViewById(R.id.likes);
+
         LinearLayout pollVoteLayout = (LinearLayout) findViewById(R.id.pollVoteLayout);
         LinearLayout pollResultsLayout = (LinearLayout) findViewById(R.id.pollResultsLayout);
 
@@ -305,6 +306,16 @@ public class CommentActivity extends AppCompatActivity {
                     String likeCount_string = Integer.toString(likeCount_int);
                     topLevelLikeCount.setText(likeCount_string);
 
+                    if (likeCount_int > 1 || likeCount_int == 0) {
+                        topLevelLikes.setText(getString(R.string.likes));
+                    } else {
+                        topLevelLikes.setText(getString(R.string.like));
+                    }
+
+                    // Set likeCount click listeners
+                    setLikersListClickListeners(topLevelLikeCount, topLevelLikes, topLevelCommentObject);
+
+                    // Set premium content condition
                     if (likeCount_int >= 4) {
                         setPremiumContent(View.VISIBLE);
                     } else {
@@ -338,7 +349,7 @@ public class CommentActivity extends AppCompatActivity {
                                     // Asynchronously display the message image downloaded from Parse
                                     if (imageURL != null) {
 
-                                        Intent intent = new Intent(getApplicationContext(), com.yeetclub.android.activity.MediaPreviewActivity.class);
+                                        Intent intent = new Intent(getApplicationContext(), MediaPreviewActivity.class);
                                         intent.putExtra("imageUrl", imageURL);
                                         this.startActivity(intent);
 
@@ -378,6 +389,23 @@ public class CommentActivity extends AppCompatActivity {
         });
     }
 
+
+    private void setLikersListClickListeners(TextView topLevelLikeCount, TextView topLevelLikes, ParseObject topLevelCommentObject) {
+        String topLevelCommentObjectId = topLevelCommentObject.getObjectId();
+        topLevelLikeCount.setOnClickListener(v -> sendLikersListExtras(topLevelCommentObjectId));
+        topLevelLikes.setOnClickListener(v -> sendLikersListExtras(topLevelCommentObjectId));
+    }
+
+
+    private void sendLikersListExtras(String topLevelCommentObjectId) {
+        Intent intent = new Intent(getApplicationContext(), UsersListActivity.class);
+        intent.putExtra(BundleConstants.KEY_LIST_TYPE, getString(R.string.likers));
+        intent.putExtra(BundleConstants.KEY_TOP_LEVEL_COMMENT_OBJECT_ID, topLevelCommentObjectId);
+        Log.w(getClass().toString(), "topLevelCommentObjectId: " + topLevelCommentObjectId);
+        startActivity(intent);
+    }
+
+
     private void displayPollObject(ParseObject topLevelCommentObject, String commentId, String userId) {
 
         TextView option1 = (TextView) findViewById(R.id.option1);
@@ -392,6 +420,9 @@ public class CommentActivity extends AppCompatActivity {
         TextView vote2 = (TextView) findViewById(R.id.vote2);
         TextView vote3 = (TextView) findViewById(R.id.vote3);
         TextView vote4 = (TextView) findViewById(R.id.vote4);
+
+        TextView numVotes = (TextView) findViewById(R.id.numVotes);
+        TextView votes = (TextView) findViewById(R.id.votes);
 
         LinearLayout pollVoteLayout = (LinearLayout) findViewById(R.id.pollVoteLayout);
         LinearLayout pollResultsLayout = (LinearLayout) findViewById(R.id.pollResultsLayout);
@@ -454,6 +485,21 @@ public class CommentActivity extends AppCompatActivity {
                         int value4_pct = ((value4_int / votedTotal_int) * 100);
                         String value4_string = Integer.toString(value4_pct);
                         value4.setText(value4_string + " %");
+
+                        // Display the total numbers of votes for a poll
+                        String voteTotal_string = Integer.toString(votedTotal_int);
+                        numVotes.setText(voteTotal_string);
+
+                        if (votedTotal_int > 1) {
+                            votes.setText(getString(R.string.votes));
+                        } else {
+                            votes.setText(getString(R.string.vote));
+                        }
+
+                        // Set click listeners for voters list
+                        String pollObjectId = pollObject.getObjectId();
+                        setVotersListClickListeners(numVotes, votes, pollObjectId);
+
                     }
 
                 } else {
@@ -577,6 +623,21 @@ public class CommentActivity extends AppCompatActivity {
     }
 
 
+    private void setVotersListClickListeners(TextView numVotes, TextView votes, String pollObjectId) {
+        numVotes.setOnClickListener(v -> sendVotersListExtras(pollObjectId));
+        votes.setOnClickListener(v -> sendVotersListExtras(pollObjectId));
+    }
+
+
+    private void sendVotersListExtras(String pollObjectId) {
+        Intent intent = new Intent(getApplicationContext(), UsersListActivity.class);
+        intent.putExtra(BundleConstants.KEY_LIST_TYPE, getString(R.string.voters));
+        intent.putExtra(BundleConstants.KEY_POLL_OBJECT_ID, pollObjectId);
+        // Log.w(getClass().toString(), pollObjectId);
+        startActivity(intent);
+    }
+
+
     private void toggleUnusedPollOptions(ParseObject pollObject, RelativeLayout resultLayout3, RelativeLayout resultLayout4) {
         if (pollObject.getString(ParseConstants.KEY_POLL_OPTION3) != null) {
             resultLayout3.setVisibility(View.VISIBLE);
@@ -672,7 +733,7 @@ public class CommentActivity extends AppCompatActivity {
         }
 
         // Here we launch a generic commenty activity class...
-        Intent intent = new Intent(getApplicationContext(), com.yeetclub.android.activity.ReplyActivity.class);
+        Intent intent = new Intent(getApplicationContext(), ReplyActivity.class);
 
         // ...and send along some information so that we can populate it with the relevant comments.
         intent.putExtra(ParseConstants.KEY_OBJECT_ID, commentId);
@@ -770,8 +831,22 @@ public class CommentActivity extends AppCompatActivity {
         if (!userId.equals(ParseUser.getCurrentUser().getObjectId())) {
             // Send push notification
             sendLikePushNotification(userId, result);
-            ParseObject notification = createLikeMessage(userId, result, commentId);
-            send(notification);
+
+            ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+            userQuery.whereEqualTo(ParseConstants.KEY_OBJECT_ID, ParseUser.getCurrentUser().getObjectId());
+            userQuery.findInBackground((users, e) -> {
+                if (e == null) for (ParseObject userObject : users) {
+                    // Retrieve the objectId of the user's current group
+                    String currentGroupObjectId = userObject.getParseObject(ParseConstants.KEY_CURRENT_GROUP).getObjectId();
+
+                    // Create notification object for NotificationsActivity
+                    ParseObject notification = createLikeMessage(userId, result, commentId, currentGroupObjectId);
+
+                    // Send ParsePush notification
+                    send(notification);
+
+                }
+            });
         }
     }
 
@@ -794,24 +869,17 @@ public class CommentActivity extends AppCompatActivity {
         });
     }
 
-    protected ParseObject createLikeMessage(String userId, String result, String commentId) {
+    protected ParseObject createLikeMessage(String userId, String result, String commentId, String currentGroupObjectId) {
 
         ParseObject notification = new ParseObject(ParseConstants.CLASS_NOTIFICATIONS);
-        notification.put(ParseConstants.KEY_SENDER_ID, ParseUser.getCurrentUser().getObjectId());
         notification.put(ParseConstants.KEY_SENDER_AUTHOR_POINTER, ParseUser.getCurrentUser());
-
-        if (!(ParseUser.getCurrentUser().get("name").toString().isEmpty())) {
-            notification.put(ParseConstants.KEY_SENDER_FULL_NAME, ParseUser.getCurrentUser().get("name"));
-        } else {
-            notification.put(ParseConstants.KEY_SENDER_FULL_NAME, R.string.anonymous_fullName);
-        }
-
         notification.put(ParseConstants.KEY_NOTIFICATION_BODY, result);
-        notification.put(ParseConstants.KEY_SENDER_NAME, ParseUser.getCurrentUser().getUsername());
+        notification.put(ParseConstants.KEY_USERNAME, ParseUser.getCurrentUser().getUsername());
         notification.put(ParseConstants.KEY_RECIPIENT_ID, userId);
         notification.put(ParseConstants.KEY_OBJECT_ID, commentId);
         notification.put(ParseConstants.KEY_NOTIFICATION_TEXT, " liked your yeet!");
         notification.put(ParseConstants.KEY_READ_STATE, false);
+        notification.put(ParseConstants.KEY_GROUP_ID, currentGroupObjectId);
         notification.put(ParseConstants.KEY_NOTIFICATION_TYPE, ParseConstants.TYPE_LIKE);
 
         if (ParseUser.getCurrentUser().getParseFile("profilePicture") != null) {
@@ -849,7 +917,7 @@ public class CommentActivity extends AppCompatActivity {
         message.put(ParseConstants.KEY_SENDER_ID, ParseUser.getCurrentUser().getObjectId());
 
         // Sender username
-        message.put(ParseConstants.KEY_SENDER_NAME, ParseUser.getCurrentUser().getUsername());
+        message.put(ParseConstants.KEY_USERNAME, ParseUser.getCurrentUser().getUsername());
 
         if (!(ParseUser.getCurrentUser().get("name").toString().isEmpty())) {
             message.put(ParseConstants.KEY_SENDER_FULL_NAME, ParseUser.getCurrentUser().get("name"));
@@ -905,8 +973,23 @@ public class CommentActivity extends AppCompatActivity {
 
             if (!userId.equals(ParseUser.getCurrentUser().getObjectId())) {
                 sendReplyPushNotification(userId, result);
-                ParseObject notification = createCommentMessage(userId, result, commentId);
-                send(notification);
+
+                ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+                userQuery.whereEqualTo(ParseConstants.KEY_OBJECT_ID, ParseUser.getCurrentUser().getObjectId());
+                userQuery.findInBackground((users, e) -> {
+                    if (e == null) for (ParseObject userObject : users) {
+                        // Retrieve the objectId of the user's current group
+                        String currentGroupObjectId = userObject.getParseObject(ParseConstants.KEY_CURRENT_GROUP).getObjectId();
+
+                        // Create notification object for NotificationsActivity
+                        ParseObject notification = createCommentMessage(userId, result, commentId, currentGroupObjectId);
+
+                        // Send ParsePush notification
+                        send(notification);
+
+                    }
+                });
+
                 Toast.makeText(getApplicationContext(), "Greet reep there, bub!", Toast.LENGTH_LONG).show();
             }
 
@@ -998,25 +1081,17 @@ public class CommentActivity extends AppCompatActivity {
         }
 
         // Here we launch a generic user profile class...
-        Intent intent = new Intent(getApplicationContext(), com.yeetclub.android.activity.UserProfileActivity.class);
+        Intent intent = new Intent(getApplicationContext(), UserProfileActivity.class);
 
         // ...and send along some information so that we can populate it with the relevant user, i.e. either ourselves or another author if visiting from another feed or Yeet.
         intent.putExtra(ParseConstants.KEY_OBJECT_ID, userId);
         startActivity(intent);
     }
 
-    protected ParseObject createCommentMessage(String userId, String result, String commentId) {
+    protected ParseObject createCommentMessage(String userId, String result, String commentId, String currentGroupObjectId) {
 
         ParseObject notification = new ParseObject(ParseConstants.CLASS_NOTIFICATIONS);
-        notification.put(ParseConstants.KEY_SENDER_ID, ParseUser.getCurrentUser().getObjectId());
         notification.put(ParseConstants.KEY_SENDER_AUTHOR_POINTER, ParseUser.getCurrentUser());
-
-        if (!(ParseUser.getCurrentUser().get("name").toString().isEmpty())) {
-            notification.put(ParseConstants.KEY_SENDER_FULL_NAME, ParseUser.getCurrentUser().get("name"));
-        } else {
-            notification.put(ParseConstants.KEY_SENDER_FULL_NAME, R.string.anonymous_fullName);
-        }
-
         notification.put(ParseConstants.KEY_NOTIFICATION_BODY, result);
         notification.put(ParseConstants.KEY_SENDER_NAME, ParseUser.getCurrentUser().getUsername());
         notification.put(ParseConstants.KEY_RECIPIENT_ID, userId);
@@ -1024,7 +1099,8 @@ public class CommentActivity extends AppCompatActivity {
         notification.put(ParseConstants.KEY_NOTIFICATION_TEXT, " reeped to your yeet!");
         notification.put(ParseConstants.KEY_NOTIFICATION_TYPE, ParseConstants.TYPE_COMMENT);
         notification.put(ParseConstants.KEY_READ_STATE, false);
-        if (ParseUser.getCurrentUser().getParseFile("profilePicture") != null) {
+        notification.put(ParseConstants.KEY_GROUP_ID, currentGroupObjectId);
+        if (ParseUser.getCurrentUser().getParseFile(ParseConstants.KEY_PROFILE_PICTURE) != null) {
             notification.put(ParseConstants.KEY_SENDER_PROFILE_PICTURE, ParseUser.getCurrentUser().getParseFile("profilePicture").getUrl());
         }
         return notification;

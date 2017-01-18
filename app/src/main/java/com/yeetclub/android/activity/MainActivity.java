@@ -282,7 +282,8 @@ public class MainActivity extends AppCompatActivity {
                         new PrimaryDrawerItem().withName(R.string.drawer_item_profile).withIcon(FontAwesome.Icon.faw_user).withIdentifier(1).withSelectable(false),
                         new PrimaryDrawerItem().withName(R.string.drawer_item_create).withIcon(FontAwesome.Icon.faw_paint_brush).withIdentifier(2).withSelectable(false),
                         new PrimaryDrawerItem().withName(R.string.drawer_item_yaanich_news).withIcon(FontAwesome.Icon.faw_newspaper_o).withIdentifier(3).withSelectable(false),
-                        new PrimaryDrawerItem().withName(R.string.drawer_item_settings).withIcon(FontAwesome.Icon.faw_cog).withIdentifier(4).withSelectable(false)
+                        new PrimaryDrawerItem().withName(R.string.drawer_item_my_groups).withIcon(FontAwesome.Icon.faw_users).withIdentifier(4).withSelectable(false),
+                        new PrimaryDrawerItem().withName(R.string.drawer_item_settings).withIcon(FontAwesome.Icon.faw_cog).withIdentifier(5).withSelectable(false)
                 )
                 .withOnDrawerItemClickListener((view, position, drawerItem) -> {
 
@@ -295,6 +296,8 @@ public class MainActivity extends AppCompatActivity {
                         } else if (drawerItem.getIdentifier() == 3) {
                             intent = new Intent(this, RssActivity.class);
                         } else if (drawerItem.getIdentifier() == 4) {
+                            intent = new Intent(this, GroupsActivity.class);
+                        } else if (drawerItem.getIdentifier() == 5) {
                             intent = new Intent(this, UserSettingsActivity.class);
                         }
                         if (intent != null) {

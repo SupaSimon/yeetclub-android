@@ -65,7 +65,8 @@
                         android:layout_height="wrap_content"
                         android:text="@string/_at"
                         android:textColor="@color/grey"
-                        android:textSize="14sp" />
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/username"
@@ -73,11 +74,20 @@
                         android:layout_height="wrap_content"
                         android:textColor="@color/grey"
                         android:textSize="14sp"
+                        android:textStyle="bold"
                         tools:text="username" />
 
                 </TableRow>
 
             </TableLayout>
+
+            <TextView
+                android:id="@+id/bio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/grey"
+                android:textSize="14sp"
+                tools:text="@string/user_bio" />
 
         </LinearLayout>
 

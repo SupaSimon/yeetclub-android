@@ -95,7 +95,7 @@ public class YeetActivity extends AppCompatActivity {
             }
 
             public void afterTextChanged(Editable s) {
-                if (null != myEditText.getLayout() && myEditText.getLayout().getLineCount() > 6)  {
+                if (null != myEditText.getLayout() && myEditText.getLayout().getLineCount() > 6) {
                     myEditText.getText().delete(myEditText.getText().length() - 1, myEditText.getText().length());
                 }
             }
@@ -122,7 +122,7 @@ public class YeetActivity extends AppCompatActivity {
 
         myEditText.setError(null);
         myEditText.getBackground().mutate().setColorFilter(
-                ContextCompat.getColor(getApplicationContext() , R.color.white),
+                ContextCompat.getColor(getApplicationContext(), R.color.white),
                 PorterDuff.Mode.SRC_ATOP);
 
         Button submitComment = (Button) findViewById(R.id.submitComment);
@@ -147,7 +147,19 @@ public class YeetActivity extends AppCompatActivity {
             view.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.image_click));
 
             String rantId = "";
-            sendYeet(myEditText, isRanting, rantId);
+
+            ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+            userQuery.whereEqualTo(ParseConstants.KEY_OBJECT_ID, ParseUser.getCurrentUser().getObjectId());
+            userQuery.findInBackground((users, e) -> {
+                if (e == null) for (ParseObject userObject : users) {
+
+                    // Retrieve the objectId of the user's current group
+                    ParseObject currentGroupObjectId = userObject.getParseObject(ParseConstants.KEY_CURRENT_GROUP);
+                    // Log.w(getClass().toString(), currentGroupObjectId);
+                    sendYeet(myEditText, isRanting, rantId, currentGroupObjectId);
+
+                }
+            });
 
         });
 
@@ -163,7 +175,11 @@ public class YeetActivity extends AppCompatActivity {
                     view.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.image_click));
 
                     String rantId = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("rantId", "");
-                    sendYeet(myEditText, isRanting, rantId);
+
+                    // Retrieve the objectId of the user's current group
+                    ParseObject currentGroupObjectId = userObject.getParseObject(ParseConstants.KEY_CURRENT_GROUP);
+                    // Log.w(getClass().toString(), currentGroupObjectId);
+                    sendYeet(myEditText, isRanting, rantId, currentGroupObjectId);
 
                 }
             });
@@ -191,7 +207,18 @@ public class YeetActivity extends AppCompatActivity {
                 editor.commit();
 
                 // Send everyone in the group a push notification
-                sendRantPushNotification();
+                ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+                userQuery.whereEqualTo(ParseConstants.KEY_OBJECT_ID, ParseUser.getCurrentUser().getObjectId());
+                userQuery.findInBackground((users, e) -> {
+                    if (e == null) for (ParseObject userObject : users) {
+
+                        // Retrieve the objectId of the user's current group
+                        ParseObject currentGroupObjectId = userObject.getParseObject(ParseConstants.KEY_CURRENT_GROUP);
+                        // Log.w(getClass().toString(), currentGroupObjectId);
+                        sendRantPushNotification(currentGroupObjectId);
+
+                    }
+                });
 
                 view.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.image_click));
 
@@ -222,7 +249,19 @@ public class YeetActivity extends AppCompatActivity {
 
             if (!(myEditText.getText().toString().isEmpty())) {
                 // Send everyone in the group a push notification
-                sendRantStopPushNotification();
+                ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+                userQuery.whereEqualTo(ParseConstants.KEY_OBJECT_ID, ParseUser.getCurrentUser().getObjectId());
+                userQuery.findInBackground((users, e) -> {
+                    if (e == null) for (ParseObject userObject : users) {
+
+                        // Retrieve the objectId of the user's current group
+                        ParseObject currentGroupObjectId = userObject.getParseObject(ParseConstants.KEY_CURRENT_GROUP);
+                        // Log.w(getClass().toString(), currentGroupObjectId);
+                        sendRantStopPushNotification(currentGroupObjectId);
+
+                    }
+                });
+
                 Toast.makeText(getApplicationContext(), "Doesn't that just nicely feel betts?", Toast.LENGTH_LONG).show();
             }
 
@@ -291,9 +330,9 @@ public class YeetActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
 
-        switch(requestCode) {
+        switch (requestCode) {
             case SELECT_PHOTO:
-                if(resultCode == RESULT_OK){
+                if (resultCode == RESULT_OK) {
 
                     findViewById(R.id.uploadImageCover).setVisibility(View.VISIBLE);
 
@@ -318,7 +357,17 @@ public class YeetActivity extends AppCompatActivity {
                                 Log.w(getClass().toString(), "Image upload failed");
                             }
                             Bitmap yourSelectedImage = BitmapFactory.decodeStream(imageStream);
-                            sendImage(yourSelectedImage, edt);
+
+                            ParseQuery<ParseUser> query = ParseUser.getQuery();
+                            query.whereEqualTo(ParseConstants.KEY_OBJECT_ID, ParseUser.getCurrentUser().getObjectId());
+                            query.findInBackground((user, e) -> {
+                                if (e == null) for (ParseObject userObject : user) {
+                                    // Retrieve the objectId of the user's current group
+                                    ParseObject currentGroupObjectId = userObject.getParseObject(ParseConstants.KEY_CURRENT_GROUP);
+                                    // Log.w(getClass().toString(), currentGroupObjectId);
+                                    sendImage(yourSelectedImage, edt, currentGroupObjectId);
+                                }
+                            });
 
                             findViewById(R.id.uploadImageCover).setVisibility(GONE);
                         }
@@ -338,7 +387,17 @@ public class YeetActivity extends AppCompatActivity {
                                 Log.w(getClass().toString(), "Image upload failed");
                             }
                             Bitmap yourSelectedImage = BitmapFactory.decodeStream(imageStream);
-                            sendImage(yourSelectedImage, edt);
+
+                            ParseQuery<ParseUser> query = ParseUser.getQuery();
+                            query.whereEqualTo(ParseConstants.KEY_OBJECT_ID, ParseUser.getCurrentUser().getObjectId());
+                            query.findInBackground((user, e) -> {
+                                if (e == null) for (ParseObject userObject : user) {
+                                    // Retrieve the objectId of the user's current group
+                                    ParseObject currentGroupObjectId = userObject.getParseObject(ParseConstants.KEY_CURRENT_GROUP);
+                                    // Log.w(getClass().toString(), currentGroupObjectId);
+                                    sendImage(yourSelectedImage, edt, currentGroupObjectId);
+                                }
+                            });
 
                             findViewById(R.id.uploadImageCover).setVisibility(GONE);
                         }
@@ -376,10 +435,10 @@ public class YeetActivity extends AppCompatActivity {
         });
     }
 
-    private void sendRantPushNotification() {
+    private void sendRantPushNotification(ParseObject currentGroupObjectId) {
         final Map<String, Object> params = new HashMap<>();
         params.put("username", ParseUser.getCurrentUser().getUsername());
-        params.put("groupId", ParseUser.getCurrentUser().getString("groupId"));
+        params.put("groupId", currentGroupObjectId.getObjectId());
         params.put("userId", ParseUser.getCurrentUser().getObjectId());
         params.put("useMasterKey", true); //Must have this line
 
@@ -395,10 +454,10 @@ public class YeetActivity extends AppCompatActivity {
         });
     }
 
-    private void sendRantStopPushNotification() {
+    private void sendRantStopPushNotification(ParseObject currentGroupObjectId) {
         final Map<String, Object> params = new HashMap<>();
         params.put("username", ParseUser.getCurrentUser().getUsername());
-        params.put("groupId", ParseUser.getCurrentUser().getString("groupId"));
+        params.put("groupId", currentGroupObjectId.getObjectId());
         params.put("userId", ParseUser.getCurrentUser().getObjectId());
         params.put("useMasterKey", true); //Must have this line
 
@@ -414,7 +473,7 @@ public class YeetActivity extends AppCompatActivity {
         });
     }
 
-    private ParseObject sendImage(Bitmap bitmap, EditText edt) {
+    private ParseObject sendImage(Bitmap bitmap, EditText edt, ParseObject currentGroupObjectId) {
 
         EditText myEditText = (EditText) findViewById(R.id.addCommentTextField);
 
@@ -422,14 +481,6 @@ public class YeetActivity extends AppCompatActivity {
         String rantId = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("rantId", "");
 
         ParseObject message = new ParseObject(ParseConstants.CLASS_YEET);
-        message.put(ParseConstants.KEY_SENDER_ID, ParseUser.getCurrentUser().getObjectId());
-        message.put(ParseConstants.KEY_SENDER_NAME, ParseUser.getCurrentUser().getUsername());
-
-        if (!(ParseUser.getCurrentUser().get("name").toString().isEmpty())) {
-            message.put(ParseConstants.KEY_SENDER_FULL_NAME, ParseUser.getCurrentUser().get("name"));
-        } else {
-            message.put(ParseConstants.KEY_SENDER_FULL_NAME, R.string.anonymous_fullName);
-        }
 
         message.put(ParseConstants.KEY_SENDER_AUTHOR_POINTER, ParseUser.getCurrentUser());
 
@@ -441,7 +492,7 @@ public class YeetActivity extends AppCompatActivity {
         }
 
         Date myDate = new Date();
-        message.put("lastReplyUpdatedAt", myDate);
+        message.put(ParseConstants.KEY_LAST_REPLY_UPDATED_AT, myDate);
 
         // Initialize "likedBy" Array column
         String[] likedBy = new String[0];
@@ -449,12 +500,7 @@ public class YeetActivity extends AppCompatActivity {
 
         message.put(ParseConstants.KEY_NOTIFICATION_TEXT, edt.getText().toString());
 
-        String groupId = ParseUser.getCurrentUser().getString("groupId");
-        message.put(ParseConstants.KEY_GROUP_ID, groupId);
-
-        if (ParseUser.getCurrentUser().getParseFile("profilePicture") != null) {
-            message.put(ParseConstants.KEY_SENDER_PROFILE_PICTURE, ParseUser.getCurrentUser().getParseFile("profilePicture").getUrl());
-        }
+        message.put(ParseConstants.KEY_GROUP_ID, currentGroupObjectId);
 
         Bitmap thumbnail = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth(), bitmap.getHeight(), false);
         // Convert it to byte
@@ -513,12 +559,8 @@ public class YeetActivity extends AppCompatActivity {
         return message;
     }
 
-    /*
-    //TODO
-    3. At least two poll options must be submitted with a Yeet when poll mode is activated
-    4. Button to iterate over number of poll options visible, i.e. 2, 3 and 4 (show/hide TextInputLayers)
-     */
-    private ParseObject sendYeet(EditText myEditText, Boolean isRanting, String rantId) {
+
+    private ParseObject sendYeet(EditText myEditText, Boolean isRanting, String rantId, ParseObject currentGroupObjectId) {
         ParseObject message = new ParseObject(ParseConstants.CLASS_YEET);
 
         // Set author pointer objectId
@@ -534,7 +576,7 @@ public class YeetActivity extends AppCompatActivity {
 
         // Set initial date
         Date myDate = new Date();
-        message.put("lastReplyUpdatedAt", myDate);
+        message.put(ParseConstants.KEY_LAST_REPLY_UPDATED_AT, myDate);
 
         // Initialize "likedBy" Array column
         String[] likedBy = new String[0];
@@ -545,8 +587,7 @@ public class YeetActivity extends AppCompatActivity {
         message.put(ParseConstants.KEY_NOTIFICATION_TEXT, result);
 
         // Set groupId
-        String groupId = ParseUser.getCurrentUser().getString("groupId");
-        message.put(ParseConstants.KEY_GROUP_ID, groupId);
+        message.put(ParseConstants.KEY_GROUP_ID, currentGroupObjectId);
 
         // Create poll if available
         createPollObject(message);
@@ -580,7 +621,6 @@ public class YeetActivity extends AppCompatActivity {
                     mp.start();
                 }
             }
-
 
             if (isRanting == false) {
                 finish();
@@ -676,7 +716,18 @@ public class YeetActivity extends AppCompatActivity {
 
             EditText myEditText = (EditText) findViewById(R.id.addCommentTextField);
             if (!(myEditText.getText().toString().isEmpty())) {
-                sendRantStopPushNotification(); // Send everyone in the group a push notification
+                ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+                userQuery.whereEqualTo(ParseConstants.KEY_OBJECT_ID, ParseUser.getCurrentUser().getObjectId());
+                userQuery.findInBackground((users, e) -> {
+                    if (e == null) for (ParseObject userObject : users) {
+
+                        // Retrieve the objectId of the user's current group
+                        ParseObject currentGroupObjectId = userObject.getParseObject(ParseConstants.KEY_CURRENT_GROUP);
+                        // Log.w(getClass().toString(), currentGroupObjectId);
+                        sendRantStopPushNotification(currentGroupObjectId);
+
+                    }
+                });
                 Toast.makeText(getApplicationContext(), "Doesn't that just nicely feel betts?", Toast.LENGTH_LONG).show();
             }
         }
@@ -702,7 +753,19 @@ public class YeetActivity extends AppCompatActivity {
 
             EditText myEditText = (EditText) findViewById(R.id.addCommentTextField);
             if (!(myEditText.getText().toString().isEmpty())) {
-                sendRantStopPushNotification(); // Send everyone in the group a push notification
+                // Send everyone in the group a push notification
+                ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+                userQuery.whereEqualTo(ParseConstants.KEY_OBJECT_ID, ParseUser.getCurrentUser().getObjectId());
+                userQuery.findInBackground((users, e) -> {
+                    if (e == null) for (ParseObject userObject : users) {
+
+                        // Retrieve the objectId of the user's current group
+                        ParseObject currentGroupObjectId = userObject.getParseObject(ParseConstants.KEY_CURRENT_GROUP);
+                        // Log.w(getClass().toString(), currentGroupObjectId);
+                        sendRantStopPushNotification(currentGroupObjectId);
+
+                    }
+                });
                 Toast.makeText(getApplicationContext(), "Doesn't that just nicely feel betts?", Toast.LENGTH_LONG).show();
             }
         }
@@ -716,6 +779,7 @@ public class YeetActivity extends AppCompatActivity {
 
 
     int index = 2;
+
     public void AddOption(View view) {
         switch (index) {
             case 0:

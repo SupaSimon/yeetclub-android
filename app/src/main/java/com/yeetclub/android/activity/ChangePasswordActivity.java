@@ -106,7 +106,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
 
         // Link to Forgot Password activity
         mForgotPasswordField.setOnClickListener(v -> {
-            Intent intent = new Intent(ChangePasswordActivity.this, com.yeetclub.android.activity.DispatchActivity.class);
+            Intent intent = new Intent(ChangePasswordActivity.this, DispatchActivity.class);
             intent.putExtra("ParseLoginHelpFragment", true);
             startActivity(intent);
         });

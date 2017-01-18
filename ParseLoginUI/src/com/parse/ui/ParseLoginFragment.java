@@ -25,6 +25,7 @@ import android.app.Activity;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -35,10 +36,13 @@ import android.widget.EditText;
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
+import com.parse.FindCallback;
 import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
 import com.parse.ParseInstallation;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseTwitterUtils;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
@@ -47,6 +51,7 @@ import com.parse.twitter.Twitter;
 import org.json.JSONObject;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -238,20 +243,33 @@ public class ParseLoginFragment extends ParseLoginFragmentBase {
         });
     }
 
-    public void updateParseInstallation(ParseUser user) {
+    public void updateParseInstallation(final ParseUser user) {
 
-        // Update Installation
-        ParseInstallation installation = ParseInstallation.getCurrentInstallation();
-        installation.put("username", user.getUsername());
-        if (user.get("profilePicture ") != null) {
-            installation.put("profilePicture", user.get("profilePicture"));
-        }
-        if (!(user.getString("groupId").isEmpty())) {
-            installation.put("groupId", user.getString(("groupId")));
-        }
-        installation.put("GCMSenderId", getString(R.string.gcm_sender_id));
-        installation.put("userId", user.getObjectId());
-        installation.saveInBackground();
+        ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+        userQuery.whereEqualTo("objectId", ParseUser.getCurrentUser().getObjectId());
+        userQuery.fromLocalDatastore();
+        userQuery.findInBackground(new FindCallback<ParseUser>() {
+            @Override
+            public void done(List<ParseUser> users, ParseException e) {
+                // Find the starter group for all new Users
+                if (e == null) for (ParseObject userObject : users) {
+                    String currentGroupObjectId = userObject.getParseObject("currentGroup").getObjectId();
+                    Log.w(getClass().toString(), currentGroupObjectId);
+
+                    // Update Installation
+                    ParseInstallation installation = ParseInstallation.getCurrentInstallation();
+                    installation.put("username", user.getUsername());
+                    if (user.get("profilePicture") != null) {
+                        installation.put("profilePicture", user.get("profilePicture"));
+                    }
+                    installation.put("groupId", currentGroupObjectId);
+                    installation.put("GCMSenderId", getString(R.string.gcm_sender_id));
+                    installation.put("userId", user.getObjectId());
+                    installation.saveInBackground();
+
+                }
+            }
+        });
 
     }
 

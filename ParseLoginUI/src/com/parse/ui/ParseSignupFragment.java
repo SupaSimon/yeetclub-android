@@ -25,6 +25,7 @@ import android.app.Activity;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -34,10 +35,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 
+import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseInstallation;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SignUpCallback;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Fragment for the user signup screen.
@@ -46,7 +53,6 @@ public class ParseSignupFragment extends ParseLoginFragmentBase implements OnCli
     public static final String USERNAME = "com.parse.ui.ParseSignupFragment.USERNAME";
     public static final String PASSWORD = "com.parse.ui.ParseSignupFragment.PASSWORD";
 
-    private EditText groupField;
     private EditText usernameField;
     private EditText passwordField;
     private EditText confirmPasswordField;
@@ -93,7 +99,6 @@ public class ParseSignupFragment extends ParseLoginFragmentBase implements OnCli
         View v = inflater.inflate(R.layout.com_parse_ui_parse_signup_fragment,
                 parent, false);
 
-        groupField = (EditText) v.findViewById(R.id.signup_group_input);
         usernameField = (EditText) v.findViewById(R.id.signup_username_input);
         usernameField.setInputType(InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
         passwordField = (EditText) v.findViewById(R.id.signup_password_input);
@@ -101,7 +106,6 @@ public class ParseSignupFragment extends ParseLoginFragmentBase implements OnCli
                 .findViewById(R.id.signup_confirm_password_input);
 
         Typeface tf_reg = Typeface.createFromAsset(getContext().getAssets(), "fonts/Lato-Regular.ttf");
-        groupField.setTypeface(tf_reg);
         usernameField.setTypeface(tf_reg);
         passwordField.setTypeface(tf_reg);
         confirmPasswordField.setTypeface(tf_reg);
@@ -149,110 +153,138 @@ public class ParseSignupFragment extends ParseLoginFragmentBase implements OnCli
 
     @Override
     public void onClick(View v) {
-        final String group = groupField.getText().toString();
-        String username = usernameField.getText().toString().toLowerCase().replace(" ", "");
-        String password = passwordField.getText().toString();
-        String passwordAgain = confirmPasswordField.getText().toString();
 
-        String email = null;
-        if (config.isParseLoginEmailAsUsername()) {
-            email = usernameField.getText().toString();
-        } else if (emailField != null) {
-            email = emailField.getText().toString();
-        }
+        ParseQuery<ParseObject> query = new ParseQuery<>("Group");
+        query.whereEqualTo("objectId", getString(R.string.starter_group_id));
+        query.fromLocalDatastore();
+        query.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> groups, ParseException e) {
+                // Find the starter group for all new Users
+                if (e == null) for (ParseObject groupObject : groups) {
+                    Log.w(getClass().toString(), groupObject.getObjectId());
 
-        if (username.length() == 0) {
-            if (config.isParseLoginEmailAsUsername()) {
-                showToast(R.string.com_parse_ui_no_email_toast);
-            } else {
-                showToast(R.string.com_parse_ui_no_username_toast);
-            }
-        } else if (password.length() == 0) {
-            showToast(R.string.com_parse_ui_no_password_toast);
-        } else if (password.length() < minPasswordLength) {
-            showToast(getResources().getQuantityString(
-                    R.plurals.com_parse_ui_password_too_short_toast,
-                    minPasswordLength, minPasswordLength));
-        } else if (passwordAgain.length() == 0) {
-            showToast(R.string.com_parse_ui_reenter_password_toast);
-        } else if (!password.equals(passwordAgain)) {
-            showToast(R.string.com_parse_ui_mismatch_confirm_password_toast);
-            confirmPasswordField.selectAll();
-            confirmPasswordField.requestFocus();
-        } else if (email != null && email.length() == 0) {
-            showToast(R.string.com_parse_ui_no_email_toast);
-//    } else if (name != null && name.length() == 0) {
-//      showToast(R.string.com_parse_ui_no_name_toast);
-        } else if (group.length() == 0) {
-            showToast(R.string.com_parse_ui_no_group_toast);
-        } else  {
-            final ParseUser user = new ParseUser();
+                    // Complete User registration
+                    String username = usernameField.getText().toString().toLowerCase().replace(" ", "");
+                    String password = passwordField.getText().toString();
+                    String passwordAgain = confirmPasswordField.getText().toString();
 
-            // Set standard fields
-            user.setUsername(username);
-            user.setPassword(password);
-            user.put("groupId", group);
-            user.saveInBackground();
-
-            // Set additional custom fields only if the user filled it out
-//      if (name.length() != 0) {
-//        user.put(USER_OBJECT_NAME_FIELD, name);
-//      }
-
-            loadingStart();
-            user.signUpInBackground(new SignUpCallback() {
-
-                @Override
-                public void done(ParseException e) {
-                    if (isActivityDestroyed()) {
-                        return;
+                    String email = null;
+                    if (config.isParseLoginEmailAsUsername()) {
+                        email = usernameField.getText().toString();
+                    } else if (emailField != null) {
+                        email = emailField.getText().toString();
                     }
 
-                    if (e == null) {
-                        updateParseInstallation(ParseUser.getCurrentUser());
-
-                        loadingFinish();
-                        signupSuccess();
-                    } else {
-                        loadingFinish();
-                        if (e != null) {
-                            debugLog(getString(R.string.com_parse_ui_login_warning_parse_signup_failed) +
-                                    e.toString());
-                            switch (e.getCode()) {
-                                case ParseException.INVALID_EMAIL_ADDRESS:
-                                    showToast(R.string.com_parse_ui_invalid_email_toast);
-                                    break;
-                                case ParseException.USERNAME_TAKEN:
-                                    showToast(R.string.com_parse_ui_username_taken_toast);
-                                    break;
-                                case ParseException.EMAIL_TAKEN:
-                                    showToast(R.string.com_parse_ui_email_taken_toast);
-                                    break;
-                                default:
-                                    showToast(R.string.com_parse_ui_signup_failed_unknown_toast);
-                            }
+                    if (username.length() == 0) {
+                        if (config.isParseLoginEmailAsUsername()) {
+                            showToast(R.string.com_parse_ui_no_email_toast);
+                        } else {
+                            showToast(R.string.com_parse_ui_no_username_toast);
                         }
+                    } else if (password.length() == 0) {
+                        showToast(R.string.com_parse_ui_no_password_toast);
+                    } else if (password.length() < minPasswordLength) {
+                        showToast(getResources().getQuantityString(
+                                R.plurals.com_parse_ui_password_too_short_toast,
+                                minPasswordLength, minPasswordLength));
+                    } else if (passwordAgain.length() == 0) {
+                        showToast(R.string.com_parse_ui_reenter_password_toast);
+                    } else if (!password.equals(passwordAgain)) {
+                        showToast(R.string.com_parse_ui_mismatch_confirm_password_toast);
+                        confirmPasswordField.selectAll();
+                        confirmPasswordField.requestFocus();
+                    } else if (email != null && email.length() == 0) {
+                        showToast(R.string.com_parse_ui_no_email_toast);
+                        //    } else if (name != null && name.length() == 0) {
+                        //      showToast(R.string.com_parse_ui_no_name_toast);
+                    } else {
+                        final ParseUser user = new ParseUser();
+
+                        // Set standard fields
+                        user.setUsername(username);
+                        user.setPassword(password);
+
+                        // Set group fields
+                        user.put("currentGroup", groupObject);
+                        String[] myGroups = {getString(R.string.starter_group_id)};
+                        user.put("myGroups", Arrays.asList(myGroups));
+
+                        // Save the new User
+                        user.saveInBackground();
+
+                        loadingStart();
+                        user.signUpInBackground(new SignUpCallback() {
+
+                            @Override
+                            public void done(ParseException e) {
+                                if (isActivityDestroyed()) {
+                                    return;
+                                }
+
+                                if (e == null) {
+                                    updateParseInstallation(ParseUser.getCurrentUser());
+
+                                    loadingFinish();
+                                    signupSuccess();
+                                } else {
+                                    loadingFinish();
+                                    if (e != null) {
+                                        debugLog(getString(R.string.com_parse_ui_login_warning_parse_signup_failed) +
+                                                e.toString());
+                                        switch (e.getCode()) {
+                                            case ParseException.INVALID_EMAIL_ADDRESS:
+                                                showToast(R.string.com_parse_ui_invalid_email_toast);
+                                                break;
+                                            case ParseException.USERNAME_TAKEN:
+                                                showToast(R.string.com_parse_ui_username_taken_toast);
+                                                break;
+                                            case ParseException.EMAIL_TAKEN:
+                                                showToast(R.string.com_parse_ui_email_taken_toast);
+                                                break;
+                                            default:
+                                                showToast(R.string.com_parse_ui_signup_failed_unknown_toast);
+                                        }
+                                    }
+                                }
+                            }
+                        });
                     }
+
                 }
-            });
-        }
+            }
+        });
+
+
     }
 
-    public void updateParseInstallation(ParseUser user) {
+    public void updateParseInstallation(final ParseUser user) {
 
-        // Update Installation
-        ParseInstallation installation = ParseInstallation.getCurrentInstallation();
-        installation.put("username", user.getUsername());
-        if (user.get("profilePicture ") != null) {
-            installation.put("profilePicture", user.get("profilePicture"));
-        }
-        if (!(user.getString("groupId").isEmpty())) {
-            installation.put("groupId", user.getString(("groupId")));
-        }
-        installation.put("GCMSenderId", getString(R.string.gcm_sender_id));
-        installation.put("userId", user.getObjectId());
-        installation.saveInBackground();
+        ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+        userQuery.whereEqualTo("objectId", ParseUser.getCurrentUser().getObjectId());
+        userQuery.fromLocalDatastore();
+        userQuery.findInBackground(new FindCallback<ParseUser>() {
+            @Override
+            public void done(List<ParseUser> users, ParseException e) {
+                // Find the starter group for all new Users
+                if (e == null) for (ParseObject userObject : users) {
+                    String currentGroupObjectId = userObject.getParseObject("currentGroup").getObjectId();
+                    Log.w(getClass().toString(), currentGroupObjectId);
 
+                    // Update Installation
+                    ParseInstallation installation = ParseInstallation.getCurrentInstallation();
+                    installation.put("username", user.getUsername());
+                    if (user.get("profilePicture") != null) {
+                        installation.put("profilePicture", user.get("profilePicture"));
+                    }
+                    installation.put("groupId", currentGroupObjectId);
+                    installation.put("GCMSenderId", getString(R.string.gcm_sender_id));
+                    installation.put("userId", user.getObjectId());
+                    installation.saveInBackground();
+
+                }
+            }
+        });
     }
 
     @Override

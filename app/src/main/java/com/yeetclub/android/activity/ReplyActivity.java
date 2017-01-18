@@ -167,7 +167,7 @@ public class ReplyActivity extends AppCompatActivity {
         message.put(ParseConstants.KEY_SENDER_ID, ParseUser.getCurrentUser().getObjectId());
 
         // Send Username
-        message.put(ParseConstants.KEY_SENDER_NAME, ParseUser.getCurrentUser().getUsername());
+        message.put(ParseConstants.KEY_USERNAME, ParseUser.getCurrentUser().getUsername());
 
         // Send Full Name
         if (!(ParseUser.getCurrentUser().get("name").toString().isEmpty())) {
@@ -203,8 +203,23 @@ public class ReplyActivity extends AppCompatActivity {
             // Send notification
             if (!userId.equals(ParseUser.getCurrentUser().getObjectId())) {
                 sendReplyPushNotification(userId, result);
-                ParseObject notification = createCommentMessage(userId, result, commentId);
-                send(notification);
+
+                ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+                userQuery.whereEqualTo(ParseConstants.KEY_OBJECT_ID, ParseUser.getCurrentUser().getObjectId());
+                userQuery.findInBackground((users, e) -> {
+                    if (e == null) for (ParseObject userObject : users) {
+                        // Retrieve the objectId of the user's current group
+                        String currentGroupObjectId = userObject.getParseObject(ParseConstants.KEY_CURRENT_GROUP).getObjectId();
+
+                        // Create notification object for NotificationsActivity
+                        ParseObject notification = createCommentMessage(userId, result, commentId, currentGroupObjectId);
+
+                        // Send ParsePush notification
+                        send(notification);
+
+                    }
+                });
+
                 Toast.makeText(getApplicationContext(), "Greet reep there, bub!", Toast.LENGTH_LONG).show();
             }
 
@@ -303,28 +318,19 @@ public class ReplyActivity extends AppCompatActivity {
         });
     }
 
-    protected ParseObject createCommentMessage(String userId, String result, String commentId) {
+    protected ParseObject createCommentMessage(String userId, String result, String commentId, String currentGroupObjectId) {
 
         ParseObject notification = new ParseObject(ParseConstants.CLASS_NOTIFICATIONS);
-        notification.put(ParseConstants.KEY_SENDER_ID, ParseUser.getCurrentUser().getObjectId());
         notification.put(ParseConstants.KEY_SENDER_AUTHOR_POINTER, ParseUser.getCurrentUser());
-
-        if (!(ParseUser.getCurrentUser().get("name").toString().isEmpty())) {
-            notification.put(ParseConstants.KEY_SENDER_FULL_NAME, ParseUser.getCurrentUser().get("name"));
-        } else {
-            notification.put(ParseConstants.KEY_SENDER_FULL_NAME, R.string.anonymous_fullName);
-        }
-
         notification.put(ParseConstants.KEY_NOTIFICATION_BODY, result);
         notification.put(ParseConstants.KEY_SENDER_NAME, ParseUser.getCurrentUser().getUsername());
         notification.put(ParseConstants.KEY_RECIPIENT_ID, userId);
         notification.put(ParseConstants.KEY_COMMENT_OBJECT_ID, commentId);
         notification.put(ParseConstants.KEY_NOTIFICATION_TEXT, " reeped to your yeet!");
         notification.put(ParseConstants.KEY_NOTIFICATION_TYPE, ParseConstants.TYPE_COMMENT);
+        notification.put(ParseConstants.KEY_GROUP_ID, currentGroupObjectId);
         notification.put(ParseConstants.KEY_READ_STATE, false);
-        if (ParseUser.getCurrentUser().getParseFile("profilePicture") != null) {
-            notification.put(ParseConstants.KEY_SENDER_PROFILE_PICTURE, ParseUser.getCurrentUser().getParseFile("profilePicture").getUrl());
-        }
+
         return notification;
     }
 

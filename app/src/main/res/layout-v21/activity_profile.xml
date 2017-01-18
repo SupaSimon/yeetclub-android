@@ -85,29 +85,44 @@
 
             </FrameLayout>
 
-            <!-- Insert Follow User Button Here -->
-
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/fullName"
+        <TableRow
+            android:id="@+id/verifiedRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/userProfile"
+            android:orientation="horizontal"
             android:paddingBottom="0dp"
             android:paddingEnd="15dp"
             android:paddingStart="15dp"
-            android:paddingTop="10dp"
-            android:text="@string/n"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:typeface="sans" />
+            android:paddingTop="10dp">
+
+            <TextView
+                android:id="@+id/fullName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="5dp"
+                android:text="@string/n"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:typeface="sans" />
+
+            <ImageView
+                android:id="@+id/verified"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/this_user_is_verified"
+                android:src="@drawable/ic_verified"
+                android:visibility="gone" />
+
+        </TableRow>
 
         <TextView
             android:id="@+id/bio"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/fullName"
+            android:layout_below="@id/verifiedRow"
             android:paddingBottom="0dp"
             android:paddingLeft="15dp"
             android:paddingRight="15dp"
@@ -140,7 +155,7 @@
             android:textSize="14sp"
             android:typeface="sans" />
 
-        <com.yalantis.phoenix.PullToRefreshView
+        <android.support.v4.widget.SwipeRefreshLayout
             android:id="@+id/swipeRefreshLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -156,7 +171,7 @@
                 android:scrollbarThumbVertical="@drawable/custom_scroll_style"
                 android:scrollbars="vertical" />
 
-        </com.yalantis.phoenix.PullToRefreshView>
+        </android.support.v4.widget.SwipeRefreshLayout>
 
     </RelativeLayout>
 

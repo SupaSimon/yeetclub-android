@@ -10,11 +10,10 @@ import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -30,12 +29,12 @@ import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
-import com.yalantis.phoenix.PullToRefreshView;
 import com.yeetclub.android.R;
 import com.yeetclub.android.adapter.UserProfileAdapter;
 import com.yeetclub.android.parse.ParseConstants;
 import com.yeetclub.android.parse.ParseHelper;
 import com.yeetclub.android.utility.NetworkHelper;
+import com.yeetclub.android.utility.PreCachingLayoutManager;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -49,7 +48,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
     private static final int SELECT_PHOTO = 2;
     protected List<ParseObject> mYeets;
-    protected PullToRefreshView mSwipeRefreshLayout;
+    protected SwipeRefreshLayout mSwipeRefreshLayout;
 
     private RecyclerView recyclerView;
     private UserProfileAdapter adapter;
@@ -133,17 +132,21 @@ public class UserProfileActivity extends AppCompatActivity {
         boolean isOnline = NetworkHelper.isOnline(this);
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setLayoutManager(new PreCachingLayoutManager(this));
         recyclerView.setHasFixedSize(true);
+
+        // For image caching
+        recyclerView.setItemViewCacheSize(20);
+        recyclerView.setDrawingCacheEnabled(true);
+
         retrieveYeets(userId, isOnline);
 
-        mSwipeRefreshLayout = (PullToRefreshView) findViewById(R.id.swipeRefreshLayout);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
         mSwipeRefreshLayout.setOnRefreshListener(() -> {
             if (!isOnline) {
                 mSwipeRefreshLayout.setRefreshing(false);
             } else {
                 createProfileHeader(userId);
-                Log.w(getClass().toString(), "PENIS");
                 retrieveYeets(userId, true);
             }
         });
@@ -201,7 +204,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
 
     private void setSwipeRefreshLayout(boolean isOnline, String userId) {
-        mSwipeRefreshLayout = (PullToRefreshView) findViewById(R.id.swipeRefreshLayout);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
         mSwipeRefreshLayout.setOnRefreshListener(() -> {
             if (!isOnline) {
                 mSwipeRefreshLayout.setRefreshing(false);
@@ -223,10 +226,11 @@ public class UserProfileActivity extends AppCompatActivity {
 
     private void createProfileHeader(String userId) {
         TextView topLevelFullName = (TextView) findViewById(R.id.fullName);
+        ImageView topLevelVerified = (ImageView) findViewById(R.id.verified);
         TextView topLevelBio = (TextView) findViewById(R.id.bio);
         TextView topLevelBae = (TextView) findViewById(R.id.bae);
         TextView topLevelWebsiteLink = (TextView) findViewById(R.id.websiteLink);
-        ImageView topLevelProfilePicture = (ImageView) findViewById(R.id.profile_picture) ;
+        ImageView topLevelProfilePicture = (ImageView) findViewById(R.id.profile_picture);
 
         Typeface tf_reg = Typeface.createFromAsset(getAssets(), "fonts/Lato-Regular.ttf");
         Typeface tf_black = Typeface.createFromAsset(getAssets(), "fonts/Lato-Black.ttf");
@@ -240,30 +244,44 @@ public class UserProfileActivity extends AppCompatActivity {
 
                 for (ParseObject headerUserObject : headerUser) {
 
-                    if (headerUserObject.getString("name") != null) {
-                        if (headerUserObject.getString("name").isEmpty()) {
+                    // Set full name
+                    if (headerUserObject.getString(ParseConstants.KEY_AUTHOR_FULL_NAME) != null) {
+                        if (headerUserObject.getString(ParseConstants.KEY_AUTHOR_FULL_NAME).isEmpty()) {
                             topLevelFullName.setVisibility(View.GONE);
                         }
 
-                        String topLevelFullNameText = headerUserObject.getString("name");
+                        String topLevelFullNameText = headerUserObject.getString(ParseConstants.KEY_AUTHOR_FULL_NAME);
                         topLevelFullName.setText(topLevelFullNameText);
                         topLevelFullName.setTypeface(tf_black);
                     } else {
                         topLevelFullName.setVisibility(View.GONE);
                     }
 
-                    if (headerUserObject.getString("bio") != null) {
-                        if (headerUserObject.getString("bio").isEmpty()) {
+                    // Set Verified badge
+                    if (headerUserObject.getBoolean(ParseConstants.KEY_VERIFIED)) {
+                        topLevelVerified.setVisibility(View.VISIBLE);
+                        topLevelVerified.setOnClickListener(v -> {
+                            v.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.image_click));
+                            Toast.makeText(getApplicationContext(), headerUserObject.getString(ParseConstants.KEY_AUTHOR_FULL_NAME) + " is a verified user.", Toast.LENGTH_SHORT).show();
+                        });
+                    } else {
+                        topLevelVerified.setVisibility(View.GONE);
+                    }
+
+                    // Set bio
+                    if (headerUserObject.getString(ParseConstants.KEY_USER_BIO) != null) {
+                        if (headerUserObject.getString(ParseConstants.KEY_USER_BIO).isEmpty()) {
                             topLevelBio.setVisibility(View.GONE);
                         }
 
-                        String headerBioText = headerUserObject.getString("bio");
+                        String headerBioText = headerUserObject.getString(ParseConstants.KEY_USER_BIO);
                         topLevelBio.setText(headerBioText);
                         topLevelBio.setTypeface(tf_reg);
                     } else {
                         topLevelBio.setVisibility(View.GONE);
                     }
 
+                    // Set bae
                     if (headerUserObject.getString("bae") != null) {
                         if (headerUserObject.getString("bae").isEmpty()) {
                             topLevelBae.setVisibility(View.GONE);
@@ -271,12 +289,13 @@ public class UserProfileActivity extends AppCompatActivity {
 
                         String headerBaeText = headerUserObject.getString("bae");
                         topLevelBae.setText(headerBaeText.toUpperCase());
-                        topLevelBae.append(getString(R.string.is_bae));
+                        topLevelBae.append(" " + getString(R.string.is_bae));
                         topLevelBae.setTypeface(tf_reg);
                     } else {
                         topLevelBae.setVisibility(View.GONE);
                     }
 
+                    // Set website link
                     if (headerUserObject.getString("websiteLink") != null) {
                         if (headerUserObject.getString("websiteLink").isEmpty()) {
                             topLevelWebsiteLink.setVisibility(View.GONE);
@@ -289,10 +308,11 @@ public class UserProfileActivity extends AppCompatActivity {
                         topLevelWebsiteLink.setVisibility(View.GONE);
                     }
 
-                    if (headerUserObject.getParseFile("profilePicture") != null) {
+                    // Set profile picture
+                    if (headerUserObject.getParseFile(ParseConstants.KEY_PROFILE_PICTURE) != null) {
 
                         Picasso.with(getApplicationContext())
-                                .load(headerUserObject.getParseFile("profilePicture").getUrl())
+                                .load(headerUserObject.getParseFile(ParseConstants.KEY_PROFILE_PICTURE).getUrl())
                                 .placeholder(R.color.placeholderblue)
                                 .memoryPolicy(MemoryPolicy.NO_CACHE).into(((ImageView) findViewById(R.id.profile_picture)));
 
@@ -325,36 +345,49 @@ public class UserProfileActivity extends AppCompatActivity {
 
 
     private void retrieveYeets(String userId, Boolean isOnline) {
-        ParseQuery<ParseObject> query = new ParseQuery<>(ParseConstants.CLASS_YEET);
-        query.whereContains(ParseConstants.KEY_SENDER_AUTHOR_POINTER, userId);
-        query.addDescendingOrder(ParseConstants.KEY_CREATED_AT);
-        query.findInBackground((yeets, e) -> {
+        ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+        userQuery.whereEqualTo(ParseConstants.KEY_OBJECT_ID, ParseUser.getCurrentUser().getObjectId());
+        userQuery.findInBackground((users, e) -> {
+            if (e == null) for (ParseObject userObject : users) {
+                // Retrieve the objectId of the user's current group
+                String currentGroupObjectId = userObject.getParseObject(ParseConstants.KEY_CURRENT_GROUP).getObjectId();
+                // Log.w(getClass().toString(), currentGroupObjectId);
 
-            mSwipeRefreshLayout.setRefreshing(false);
+                ParseQuery<ParseObject> query = new ParseQuery<>(ParseConstants.CLASS_YEET);
+                query.whereContains(ParseConstants.KEY_SENDER_AUTHOR_POINTER, userId);
+                //  how only Yeets that match the current group of the user viewing the profile
+                query.whereContains(ParseConstants.KEY_GROUP_ID, currentGroupObjectId);
+                query.addDescendingOrder(ParseConstants.KEY_LAST_REPLY_UPDATED_AT);
+                query.findInBackground((yeets, e2) -> {
 
-            if (e == null) {
+                    mSwipeRefreshLayout.setRefreshing(false);
 
-                // We found messages!
-                mYeets = yeets;
-                ParseObject.pinAllInBackground(mYeets);
+                    if (e2 == null) {
 
-                UserProfileAdapter adapter = new UserProfileAdapter(getApplicationContext(), yeets);
-                adapter.setHasStableIds(true);
-                /*RecyclerViewHeader header = (RecyclerViewHeader) findViewById(R.id.header);
-                header.attachTo(recyclerView);*/
-                recyclerView.setAdapter(adapter);
+                        // We found messages!
+                        mYeets = yeets;
+                        ParseObject.pinAllInBackground(mYeets);
 
-                mSwipeRefreshLayout.setOnRefreshListener(() -> {
-                    if (!isOnline) {
-                        mSwipeRefreshLayout.setRefreshing(false);
-                        Toast.makeText(getApplicationContext(), getString(R.string.cannot_retrieve_messages), Toast.LENGTH_SHORT).show();
-                    } else {
-                        Date onRefreshDate = new Date();
-                        /*System.out.println(onRefreshDate.getTime());*/
+                        UserProfileAdapter adapter = new UserProfileAdapter(getApplicationContext(), yeets);
+                        adapter.setHasStableIds(true);
+                        /*RecyclerViewHeader header = (RecyclerViewHeader) findViewById(R.id.header);
+                        header.attachTo(recyclerView);*/
+                        recyclerView.setAdapter(adapter);
 
-                        createProfileHeader(userId);
+                        mSwipeRefreshLayout.setOnRefreshListener(() -> {
+                            if (!isOnline) {
+                                mSwipeRefreshLayout.setRefreshing(false);
+                                Toast.makeText(getApplicationContext(), getString(R.string.cannot_retrieve_messages), Toast.LENGTH_SHORT).show();
+                            } else {
+                                Date onRefreshDate = new Date();
+                                /*System.out.println(onRefreshDate.getTime());*/
 
-                        refreshYeets(userId, onRefreshDate, adapter);
+                                createProfileHeader(userId);
+
+                                refreshYeets(userId, onRefreshDate, adapter);
+                            }
+                        });
+
                     }
                 });
 
@@ -364,32 +397,44 @@ public class UserProfileActivity extends AppCompatActivity {
 
 
     private void refreshYeets(String userId, Date date, UserProfileAdapter adapter) {
-        ParseQuery<ParseObject> query = new ParseQuery<>(ParseConstants.CLASS_YEET);
-        query.whereContains(ParseConstants.KEY_SENDER_AUTHOR_POINTER, userId);
-        query.orderByDescending("lastReplyUpdatedAt");
-        if (date != null)
-            query.whereLessThanOrEqualTo("createdAt", date);
-        query.setLimit(1000);
-        query.findInBackground((yeets, e) -> {
+        ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+        userQuery.whereEqualTo(ParseConstants.KEY_OBJECT_ID, ParseUser.getCurrentUser().getObjectId());
+        userQuery.findInBackground((users, e) -> {
+            if (e == null) for (ParseObject userObject : users) {
+                // Retrieve the objectId of the user's current group
+                String currentGroupObjectId = userObject.getParseObject(ParseConstants.KEY_CURRENT_GROUP).getObjectId();
+                // Log.w(getClass().toString(), currentGroupObjectId);
 
-            mSwipeRefreshLayout.setRefreshing(false);
+                ParseQuery<ParseObject> query = new ParseQuery<>(ParseConstants.CLASS_YEET);
+                query.whereContains(ParseConstants.KEY_SENDER_AUTHOR_POINTER, userId);
+                // Show only Yeets that match the current group of the user viewing the profile
+                query.whereContains(ParseConstants.KEY_GROUP_ID, currentGroupObjectId);
+                query.orderByDescending(ParseConstants.KEY_LAST_REPLY_UPDATED_AT);
+                if (date != null)
+                    query.whereLessThanOrEqualTo(ParseConstants.KEY_CREATED_AT, date);
+                query.setLimit(1000);
+                query.findInBackground((yeets, e2) -> {
 
-            if (e == null) {
-                // We found messages!
-                mYeets.removeAll(yeets);
-                mYeets.addAll(0, yeets); //This should append new messages to the top
-                adapter.notifyDataSetChanged();
-                ParseObject.pinAllInBackground(mYeets);
+                    mSwipeRefreshLayout.setRefreshing(false);
 
-                /*System.out.println(yeets);*/
-                if (recyclerView.getAdapter() == null) {
-                    adapter.setHasStableIds(true);
-                    recyclerView.setHasFixedSize(true);
-                    adapter.notifyDataSetChanged();
-                    recyclerView.setAdapter(adapter);
-                } else {
-                    adapter.notifyDataSetChanged();
-                }
+                    if (e2 == null) {
+                        // We found messages!
+                        mYeets.removeAll(yeets);
+                        mYeets.addAll(0, yeets); //This should append new messages to the top
+                        adapter.notifyDataSetChanged();
+                        ParseObject.pinAllInBackground(mYeets);
+
+                                /*System.out.println(yeets);*/
+                        if (recyclerView.getAdapter() == null) {
+                            adapter.setHasStableIds(true);
+                            recyclerView.setHasFixedSize(true);
+                            adapter.notifyDataSetChanged();
+                            recyclerView.setAdapter(adapter);
+                        } else {
+                            adapter.notifyDataSetChanged();
+                        }
+                    }
+                });
             }
         });
     }
