@@ -4,7 +4,7 @@
 
 
 # Yeet Club - An Exclusive App for Everybody
-Yeet Club is an open-source Android application for small, private groups of exclusive friends. It's like Twitter for groups.
+Yeet Club is an open-source Android application for small, private groups of exclusive friends. It runs on Parse Server and works a lot like Twitter.
 
 # Table of Contents  
 * [0.0 Vision](#vision)
