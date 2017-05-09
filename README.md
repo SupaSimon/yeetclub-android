@@ -137,7 +137,7 @@ We do not do anything special with Session but I included it for completion.
 #### 3.1.3 User
 
 | username (String) | name (String) | bio (String) | websiteLink (String) | profilePicture (File) | bae (String) | currentGroup (Pointer <_Group>) | myGroups (Array) | isRanting (boolean) |
-|--------------------------|-----------------|-------------------|--------------|----------------------|---------------|----------------|-------------------------------------|-----------------|-----------------------|----------------------|-------------------|----------------|---------------|---------------|
+|--------------------------|-----------------|-------------------|--------------|----------------------|---------------|----------------|-------------------------------------|-----------------|
 | lumberg | Lumberg | Just make sure you go ahead and put that new cover letter on all your TPS reports next time, mmkay? | https://www.youtube.com/watch?v=kVmC0ktznNo | https://memecrunch.com/image/51621675afa96f32ef000013.jpg?w=400 | Scolding Cucks | BDkKvNQ3Co | ["BDkKvNQ3Co","v30ajFHwnA"] | false |
 
 It might be worth explaining a few of these fields:
