@@ -32,7 +32,7 @@ Yeet Club is an open-source Android application for small, private groups of exc
 
 <hr>
 
-<a name="vision"/>
+<a name="vision"></a>
 ## 0.0 Vision
 
 If you are interested in contributing to the main repository here, you could very well see your changes reflected in the Yeet Club app at https://play.google.com/store/apps/details?id=com.yeetclub.android&hl=en. If you love Yeet Club and want to buy me coffee, send some beans this a-way: https://www.paypal.me/hypercycle
@@ -47,7 +47,7 @@ Anyway, happy coding! If you're interested in contributing, please give us a sho
 
 <hr>
 
-<a name="team"/>
+<a name="team"></a>
 ## 1.0 Team & Past Contributors
 
 * <a href="https://github.com/santafebound/">Martin Erlic</a>
@@ -56,22 +56,22 @@ Anyway, happy coding! If you're interested in contributing, please give us a sho
 
 <hr>
 
-<a name="installation"/>
+<a name="installation"></a>
 ## 2.0 Installation & Documentation
 
-<a name="trello"/>
+<a name="trello"></a>
 ### 2.1 Trello
 
 Trello Board: https://trello.com/b/uYy2BsuH/yeet-club
 
 I'm using this board to organize my thoughts so far. Feel free to peruse it for inspiration. My current personal objectives are listed at the top of the **Priorities** column. If you'd like to contribute in any way, big or small, just get in touch!
 
-<a name="back4app"/>
+<a name="back4app"></a>
 ### 2.2 Back4App Registration
 
 If you want to host your own version of Yeet Club, that's fine too. In order to host your own version of Yeet Club, you will most likely want to create an account at www.back4app.com. Given that Yeet Club was originally developed with Parse, this means that Back4App is currently one of the few viable free hosting options out-of-box. Back4App is a Cloud BaaS (Back-End as a Service) solution that will host your database initially free of charge (that is, until your query requests reach a specified limit threshold per second). See https://www.back4app.com/pricing for additional pricing information at scale. I've found Back4App to be highly reliable so far, but if you are interested in hosting your own Parse Server elsewhere, there are tons of useful instructions and tutorials online. This article is a good place to start: https://medium.com/@timothy_whiting/setting-up-your-own-parse-server-568ee921333a
 
-<a name="config"/>
+<a name="config"></a>
 ### 2.3 Application Configuration
 
 You will find a class called **GlobalApplication** in the package <b>com.yeetclub.application</b>. This is where we initialize Parse, among other things. From your res/values/strings.xml file, add your own values to R.string.parse_app_id and R.string.parse_client_key with the Application Id and Client Key provided to you by Back4App (https://dashboard.back4app.com/ > Core Settings):
@@ -92,12 +92,12 @@ On the other hand, feel free to rebrand and repackage the app to suit your needs
 
 <hr>
 
-<a name="schema"/>
+<a name="schema"></a>
 ## 3.0 Database Schema
 
 The complete database schema is documented below. Without configuring the following classes and attributes in your own Parse dashboard, downloading the source code probably won't be much help!
 
-<a name="classes"/>
+<a name="classes"></a>
 ### 3.1 Classes
 
 For each Class, I've excluded the auto-generated default Parse columns, i.e. objectId, createdAt, updatedAt, ACL, etc. due to redundancy. Also, I've provided examples of object data for demonstration purposes only. If you are relatively unfamiliar with software development or have little experience with NoSQL databases in particular, you should be aware that you only need to create the columns with their provided titles, and should not by any means include a sample object like I have below. Doing otherwise could mess up your application; this data will be generated on its own when users start interacting with your application.
@@ -114,7 +114,7 @@ For each Class, I've excluded the auto-generated default Parse columns, i.e. obj
 
 <hr>
 
-<a name="installation"/>
+<a name="installation"></a>
 #### 3.1.O Installation
 
 This Class will be instantiated by default, but you will need to add a few extra columns to get Push Notifications working with your application. Please add the following columns to your Installation class:
@@ -123,17 +123,17 @@ This Class will be instantiated by default, but you will need to add a few extra
 |-----------------|-------------------|-------------------------|
 | mBxXzIUZH3 | lumberg | https://memecrunch.com/image/51621675afa96f32ef000013.jpg?w=400 |
 
-<a name="role"/>
+<a name="role"></a>
 #### 3.1.1 Role
 
 We do not do anything special with Role but I included it for completion.
 
-<a name="session"/>
+<a name="session"></a>
 #### 3.1.2 Session
 
 We do not do anything special with Session but I included it for completion.
 
-<a name="user"/>
+<a name="user"></a>
 #### 3.1.3 User
 
 | username (String) | name (String) | bio (String) | websiteLink (String) | profilePicture (File) | bae (String) | currentGroup (Pointer <_Group>) | myGroups (Array) | isRanting (boolean)
@@ -158,7 +158,7 @@ An Array that stores a list of Groups to which the current User belongs. This Ar
 
 **isRanting** is a boolean that checks whether or not the current user is in rant mode. Rant mode allows the user to fire off successive yeets without having to continually press the button that lets you yeet new messages. Entering rant mode also notifies all group members when a user is ranting, and marks their posts in red so that the finished rant appears as a cohesive story. isRanting is by default set to false upon user registration, and is activated in various situations throughout the application where appropriate.
 
-<a name="comment"/>
+<a name="comment"></a>
 #### 3.1.4 Comment
 
 Comments are fairly self explanatory:
@@ -171,7 +171,7 @@ Comments are fairly self explanatory:
 
 **likedBy** is an array that holds the objectIds of users who have liked your comment. This array presently works to stop push notifications from being sent to oneself when liking or replying to one's own comments, but it can be manipulated as seen fit, perhaps to display a list of users who have liked a particular comment.
 
-<a name="notification"/>
+<a name="notification"></a>
 #### 3.1.5 Notification
 
 The Notification class comprises the list of actual notification objects that are retrieved in NotificationsActivity:
@@ -184,12 +184,12 @@ The Notification class comprises the list of actual notification objects that ar
 
 **read** determines whether the notification has been seen by a user or not. Refreshing the NotificationsActivity will also set all seen notifications to read. If a notification has been seen a change in color will indicate its change of state. All notifications by default are set to false.
 
-<a name="poll"/>
+<a name="poll"></a>
 #### 3.1.6 Poll
 
 The Poll class has not yet been implemented. Polls will allow users to asks their friends time-limited questions with multiple choice answers. Each Yeet (see below) will have a pollObject (Pointer <_Poll)> column that will allow for retrieval of poll data so that it can be displayed it in the feed.
 
-<a name="yeet"/>
+<a name="yeet"></a>
 #### 3.1.7 Yeet
 
 The Yeet class is the bread and butter of Yeet Club. Yeets are short, 140 character messages, or images, or polls that are sent only to the groupId that you signed up with.
@@ -210,7 +210,7 @@ We make sure to update **lastReplyUpdatedAt** whenever a Yeet is replied to so t
 ##### 3.1.7.4 pollObject
 **pollObject** is a unique identifier that connects a Yeet feed item with a poll. When polls are implemented, the pollObject will be used to query poll data, such as questions, votes, and poll closing time, so that it can be displayed in the feed.
 
-<a name="group"/>
+<a name="group"></a>
 #### 3.1.8 Group
 
 The Group class stores all information about separate groups created by various users within your application. Group objects are nominally referred to as "Clubs" inside the Yeet Club app. Users may switch between groups by updating their currentGroup (Pointer <_Group>) column, and also store a list of saved groups in their "myGroups (Array)" column.
@@ -221,7 +221,7 @@ The Group class stores all information about separate groups created by various 
 
 <hr>
 
-<a name="push"/>
+<a name="push"></a>
 ## 4.0 Push Notifications
 
 Back4App provides a service that leverages Parse Server's cloud code to send GCM notifications to your application. You will have to register for a GCM Sender ID and API Key here: https://developers.google.com/mobile/add?platform=android&cntapi=gcm&cnturl=https:%2F%2Fdevelopers.google.com%2Fcloud-messaging%2Fandroid%2Fclient&cntlbl=Continue%20Adding%20GCM%20Support&%3Fconfigured%3Dtrue, then provide that information to Back4App under Android Push Notification Settings (https://dashboard.back4app.com/) to register your service. This is a useful tutorial to get started: http://docs.back4app.com/docs/android/push-notifications/
@@ -362,7 +362,7 @@ Parse.Cloud.define("pushFunction", function (request, response) {
 
 <hr>
 
-<a name="needs"/>
+<a name="needs"></a>
 ## 5.0 Roadmap
 
 There are tons and tons of code optimizations that could be made here, including pulling all Parse queries outside of Activities (separation of general business logic), using RetroFit and ReactiveX to increase the speed and reliability of data transfer in the feed, etc. For now, please refer to the Trello board: https://trello.com/b/uYy2BsuH/yeet-club to keep track of upcoming features. I will try my best to outline a more detailed roadmap as time goes on, including contributors' suggestions, database schema improvements, etc. As always, I encourage anybody who is interested to reach out at info@yeet.club if you have any questions, comments, or concerns. Cheers.
@@ -379,7 +379,7 @@ Cacheing data for offline viewing could be another great way to improve the usab
 
 <hr>
 
-<a name="libs"/>
+<a name="libs"></a>
 ## 6.0 Third Party Libraries
 
 The following Third Party Libraries are used in Yeet Club:
@@ -390,7 +390,7 @@ The following Third Party Libraries are used in Yeet Club:
 
 <hr>
 
-<a name="license"/>
+<a name="license"></a>
 ## 7.0 License
 
 Copyright 2016 Hypercycle, Inc.
@@ -409,7 +409,7 @@ limitations under the License.
 
 <hr>
 
-<a name="trademark"/>
+<a name="trademark"></a>
 ## 8.0 Trademark Information
 
 Yeet Club™ is a trademark of Hypercycle, Inc. The trademark Yeet Club™ may not be used in any public or commercial products or applications of any kind without the express permission of Hypercycle, Inc. The Yeet Club application may be hosted on a private server and compiled for personal consumption *as is*, but may not be distributed on any public forum, website or by any other means of digital distribution in any way prior to removing and/or replacing the Yeet Club™ trademark. Please keep in mind that this does not prohibit Yeet Club™ code from being used in any public or private, commercial or non-commercial product or application so long as the trademark is removed and/or replaced. For further clarification of the use and distribution of the Yeet Club™ codebase, please see the open-source license agreement provided above.
