@@ -52,7 +52,7 @@ Anyway, happy coding! If you're interested in contributing, please give us a sho
 
 * <a href="https://github.com/santafebound/">Martin Erlic</a>
 * <a href="https://github.com/supasimon/">Simon Erlic</a>
-* <a href="https://github.com/TheFanatr/">Alex Danut</a>
+* <a href="https://github.com/TheFanatr/">Alex Fanat</a>
 
 <hr>
 
